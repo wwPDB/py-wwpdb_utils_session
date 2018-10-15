@@ -31,8 +31,8 @@ import traceback
 import ntpath
 #
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.utils.webservice.UtilDataStore import UtilDataStore
-from wwpdb.utils.webservice.WebRequest import ResponseContent
+from wwpdb.utils.session.UtilDataStore import UtilDataStore
+from wwpdb.utils.session.WebRequest import ResponseContent
 #
 
 

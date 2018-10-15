@@ -42,7 +42,7 @@ __version__   = "V0.09"
 
 import sys, os, types, string, traceback
 from wwpdb.io.locator.PathInfo                     import PathInfo
-from wwpdb.utils.webservice.WebRequest             import ResponseContent
+from wwpdb.utils.session.WebRequest             import ResponseContent
 
 class WebDownloadUtils(object):
     """

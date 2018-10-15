@@ -9,9 +9,9 @@ from setuptools import find_packages
 from setuptools import setup
 
 packages = []
-thisPackage = 'wwpdb.utils.webservice'
+thisPackage = 'wwpdb.utils.session'
 
-with open('wwpdb/utils/webservice/__init__.py', 'r') as fd:
+with open('wwpdb/utils/session/__init__.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         fd.read(), re.MULTILINE).group(1)
 
@@ -21,11 +21,11 @@ if not version:
 setup(
     name=thisPackage,
     version=version,
-    description='wwPDB webservice support',
+    description='wwPDB session support',
     long_description="See:  README.md",
     author='Ezra Peisach',
     author_email='ezra.peisach@rcsb.org',
-    url='https://github.com/rcsb/py-wwpdb_utils_webservice',
+    url='https://github.com/rcsb/py-wwpdb_utils_session',
     #
     license='Apache 2.0',
     classifiers=(
@@ -45,14 +45,14 @@ setup(
     },
     #
     install_requires=['wwpdb.utils.config', 'wwpdb.io'],
-    packages=find_packages(exclude=['wwpdb.utils.tests-webservice']),
+    packages=find_packages(exclude=['wwpdb.utils.tests-session']),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
         '': ['*.md', '*.rst', "*.txt", "*.cfg"],
     },
     #
     # These basic tests require no database services -
-    test_suite="wwpdb.utils.tests-webservice",
+    test_suite="wwpdb.utils.tests-session",
     tests_require=['tox'],
     #
     # Not configured ...

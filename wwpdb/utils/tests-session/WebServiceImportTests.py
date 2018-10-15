@@ -14,12 +14,12 @@ __version__ = "V0.01"
 
 import unittest
 
-from wwpdb.utils.webservice.SessionManager    import SessionManager
-from wwpdb.utils.webservice.UtilDataStore     import UtilDataStore
-from wwpdb.utils.webservice.WebAppWorkerBase  import WebAppWorkerBase 
-from wwpdb.utils.webservice.WebDownloadUtils  import WebDownloadUtils
-from wwpdb.utils.webservice.WebRequest        import WebRequest
-from wwpdb.utils.webservice.WebUploadUtils    import WebUploadUtils
+from wwpdb.utils.session.SessionManager    import SessionManager
+from wwpdb.utils.session.UtilDataStore     import UtilDataStore
+from wwpdb.utils.session.WebAppWorkerBase  import WebAppWorkerBase 
+from wwpdb.utils.session.WebDownloadUtils  import WebDownloadUtils
+from wwpdb.utils.session.WebRequest        import WebRequest
+from wwpdb.utils.session.WebUploadUtils    import WebUploadUtils
 
 
 class ImportTests(unittest.TestCase):

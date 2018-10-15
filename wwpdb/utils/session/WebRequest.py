@@ -43,7 +43,7 @@ try:
 except:
     from simplejson import loads, dumps
 
-from wwpdb.utils.webservice.SessionManager import SessionManager
+from wwpdb.utils.session.SessionManager import SessionManager
 from datetime import datetime
 
 
