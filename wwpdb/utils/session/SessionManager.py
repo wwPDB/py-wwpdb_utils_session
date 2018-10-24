@@ -57,7 +57,9 @@ class SessionManager(object):
         return self.__uid
         
     def assignId(self):
-        self.__uid = hashlib.sha1(repr(time.time())).hexdigest()
+        # Need to convert to str (python2)/bytes (python3)
+        tmp = repr(time.time()).encode('utf-8')
+        self.__uid = hashlib.sha1(tmp).hexdigest()
         return self.__uid        
 
     def getPath(self):
