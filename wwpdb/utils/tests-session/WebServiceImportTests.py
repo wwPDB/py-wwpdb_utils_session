@@ -20,7 +20,7 @@ from wwpdb.utils.session.WebAppWorkerBase  import WebAppWorkerBase
 from wwpdb.utils.session.WebDownloadUtils  import WebDownloadUtils
 from wwpdb.utils.session.WebRequest        import WebRequest
 from wwpdb.utils.session.WebUploadUtils    import WebUploadUtils
-
+from wwpdb.utils.session.FileUtils         import FileUtils
 
 class ImportTests(unittest.TestCase):
     def setUp(self):
