@@ -42,8 +42,7 @@ class UtilDataStore(object):
         else:
             self.__filePrefix = "general"
         self.__filePath = None
-        if reqObj:
-            self.__setup()
+        self.__setup()
 
     def __setup(self):
         self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
