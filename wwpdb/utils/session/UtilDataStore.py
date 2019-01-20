@@ -19,114 +19,114 @@ __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
 
-import sys, time, os.path
+import sys
+import os.path
 try:
-	import cPickle as pickle
+    import cPickle as pickle
 except ImportError:
-	import pickle
+    import pickle
 
 
 class UtilDataStore(object):
     """  Provide a storage interface for miscellaneous key,value data.
         
     """
-    def __init__(self,reqObj,prefix=None,verbose=False,log=sys.stderr):
-        self.__verbose=verbose
-        self.__debug=True
-        self.__lfh=log
-        self.__reqObj=reqObj
+
+    def __init__(self, reqObj, prefix=None, verbose=False, log=sys.stderr):
+        self.__verbose = verbose
+        self.__debug = True
+        self.__lfh = log
+        self.__reqObj = reqObj
         if prefix is not None:
-            self.__filePrefix=prefix
+            self.__filePrefix = prefix
         else:
-            self.__filePrefix="general"
-        self.__filePath=None
-        self.__setup()
-        
+            self.__filePrefix = "general"
+        self.__filePath = None
+        if reqObj:
+            self.__setup()
+
     def __setup(self):
-        self.__siteId=self.__reqObj.getValue("WWPDB_SITE_ID")
-        self.__sObj  =self.__reqObj.getSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__D={}
+        self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
+        self.__sObj = self.__reqObj.getSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        self.__D = {}
         #
-        #self.__pickleProtocol = pickle.HIGHEST_PROTOCOL
-        self.__pickleProtocol=0
+        # self.__pickleProtocol = pickle.HIGHEST_PROTOCOL
+        self.__pickleProtocol = 0
         try:
-            self.__filePath = os.path.join(self.__sessionPath,self.__filePrefix+"-util-session.pic")
+            self.__filePath = os.path.join(self.__sessionPath, self.__filePrefix + "-util-session.pic")
             if (self.__verbose):
-                self.__lfh.write("\n+UtilDataStore.__setup() - data store path %s\n" % self.__filePath)               
+                self.__lfh.write("\n+UtilDataStore.__setup() - data store path %s\n" % self.__filePath)
             self.deserialize()
         except:
             if (self.__debug):
-                self.__lfh.write("\n+UtilDataStore.__setup() - Failed to open data store for session id %s data store prefix %s path %s\n" %
-                                 (self.__sessionId,self.__filePrefix,self.__filePath))            
+                self.__lfh.write(
+                    "\n+UtilDataStore.__setup() - Failed to open data store for session id %s data store prefix %s path %s\n" %
+                    (self.__sessionId, self.__filePrefix, self.__filePath))
 
     def reset(self):
-        self.__D={}
+        self.__D = {}
 
     def getFilePath(self):
         return self.__filePath
-       
+
     def serialize(self):
         try:
-            fb=open(self.__filePath,'wb')
-            pickle.dump(self.__D,fb,self.__pickleProtocol)
+            fb = open(self.__filePath, 'wb')
+            pickle.dump(self.__D, fb, self.__pickleProtocol)
             fb.close()
         except:
             pass
-            
+
     def deserialize(self):
         try:
-            fb=open(self.__filePath,'rb')
-            self.__D=pickle.load(fb)
+            fb = open(self.__filePath, 'rb')
+            self.__D = pickle.load(fb)
             fb.close()
             return True
         except:
             return False
 
-
-    def get(self,key):
+    def get(self, key):
         try:
-            return(self.__D[key])
+            return (self.__D[key])
         except:
             return ''
 
-    def set(self,key,value):
+    def set(self, key, value):
         try:
-            self.__D[key]=value
+            self.__D[key] = value
             return True
         except:
             return False
 
-    def append(self,key,value):
+    def append(self, key, value):
         try:
             if not self.__D.has_key(key):
-                self.__D[key]=[]
+                self.__D[key] = []
             self.__D[key].append(value)
             return True
         except:
             return False
 
-    def extend(self,key,valueList):
+    def extend(self, key, valueList):
         try:
             if not self.__D.has_key(key):
-                self.__D[key]=[]
+                self.__D[key] = []
             self.__D[key].extend(valueList)
             return True
         except:
             return False
 
-    def updateDict(self,key,subKey,value):
+    def updateDict(self, key, subKey, value):
         try:
             if not self.__D.has_key(key):
-                self.__D[key]={}
-            self.__D[key][subKey]=value
+                self.__D[key] = {}
+            self.__D[key][subKey] = value
             return True
         except:
             return False
 
-
     def getDictionary(self):
         return self.__D
-    
-
