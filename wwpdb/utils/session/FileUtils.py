@@ -77,7 +77,7 @@ class FileUtils(object):
                                                    'prd-search', 'component-image', 'component-definition', 'auxiliary-file'],
 
                      'Sequence Assignment Files': ['seqdb-match', 'blast-match', 'seq-assign', 'seq-data-stats', 'seq-align-data', 'polymer-linkage-distances',
-                                                   'polymer-linkage-report', 'sequence-fasta'],
+                                                   'polymer-linkage-report', 'sequence-fasta', 'partial-seq-annotate'],
                      'Annotation Task Files': ['assembly-report', 'assembly-assign', 'interface-assign', 'assembly-model', 'assembly-model-xyz', 'site-assign', 'map-2fofc',
                                                'map-fofc', 'secondary-structure-topology', 'map-header-data',
                                                'fsc'],
