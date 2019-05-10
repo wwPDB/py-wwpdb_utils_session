@@ -86,7 +86,8 @@ class FileUtils(object):
                                        'dict-check-report', 'dict-check-report-r4', 'dict-check-report-next',
                                        'format-check-report', 'misc-check-report', 'special-position-report', 'merge-xyz-report', 'nmr-cs-check-report',
                                        'nmr-cs-xyz-check-report', 'validation-report', 'validation-report-full',
-                                       'validation-report-slider', 'validation-data', 'sf-convert-report', 'dcc-report', 'mapfix-report', 'fsc-report',
+                                       'validation-report-slider', 'validation-data', 'validation-report-2fo-map-coef', 'validation-report-fo-map-coef',
+                                       'sf-convert-report', 'dcc-report', 'mapfix-report', 'fsc-report',
                                        'em2em-report'],
 
                      'Message Files': ['messages-from-depositor', 'messages-to-depositor', 'notes-from-annotator', 'correspondence-to-depositor'],
