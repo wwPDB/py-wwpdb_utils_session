@@ -57,8 +57,12 @@ class WebUploadUtils(object):
         if (self.__debug):
             self.__lfh.write("+WebUploadUtils.isFileUpLoad() fs  %r\n" % fs)
 
-        if ((fs is None) or (isinstance(fs, types.StringType)) or (isinstance(fs, types.UnicodeType))):
-            return False
+        if sys.version_info[0] < 3:
+            if ((fs is None) or (isinstance(fs, types.StringType)) or (isinstance(fs, types.UnicodeType))):
+                return False
+        else:
+            if ((fs is None) or (isinstance(fs, str)) or (isinstance(fs, bytes))):
+                return False
         return True
 
     def getUploadFileName(self, fileTag='file'):
