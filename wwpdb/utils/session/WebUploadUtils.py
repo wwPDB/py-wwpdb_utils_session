@@ -134,7 +134,7 @@ class WebUploadUtils(object):
                 self.__lfh.write("+WebUploadUtils.copyToSession() - session target file path   %s\n" % sessionInputFilePath)
                 self.__lfh.write("+WebUploadUtils.copyToSession() - session target file name   %s\n" % sessionInputFileName)
             #
-            ofh = open(sessionInputFilePath, 'w')
+            ofh = open(sessionInputFilePath, 'wb')
             ofh.write(fs.file.read())
             ofh.close()
             #
