@@ -227,8 +227,13 @@ class WebAppWorkerBase(object):
         """ Generic check for the existence of request paramenter of type "file".
         """
         fs = self._reqObj.getRawValue(fileTag)
-        if ((fs is None) or (isinstance(fs, types.StringType))):
-            return False
+        if sys.version_info[0] < 3:
+            if ((fs is None) or (isinstance(fs, types.StringType))):
+                return False
+        else:
+            if ((fs is None) or (isinstance(fs, str)) or (isinstance(fs, bytes))):
+                return False
+
         return True
 
     def _uploadFile(self, fileTag='file'):
