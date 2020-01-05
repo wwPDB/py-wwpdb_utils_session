@@ -58,11 +58,11 @@ class UtilDataStore(object):
             if (self.__verbose):
                 self.__lfh.write("\n+UtilDataStore.__setup() - data store path %s\n" % self.__filePath)
             self.deserialize()
-        except:
+        except Exception as e:
             if (self.__debug):
                 self.__lfh.write(
-                    "\n+UtilDataStore.__setup() - Failed to open data store for session id %s data store prefix %s path %s\n" %
-                    (self.__sessionId, self.__filePrefix, self.__filePath))
+                    "\n+UtilDataStore.__setup() - Failed to open data store for session id %s data store prefix %s path %s err %s\n" %
+                    (self.__sessionId, self.__filePrefix, self.__filePath, str(e)))
 
     def reset(self):
         self.__D = {}
@@ -102,7 +102,7 @@ class UtilDataStore(object):
 
     def append(self, key, value):
         try:
-            if not self.__D.has_key(key):
+            if key not in self.__D:
                 self.__D[key] = []
             self.__D[key].append(value)
             return True
@@ -111,7 +111,7 @@ class UtilDataStore(object):
 
     def extend(self, key, valueList):
         try:
-            if not self.__D.has_key(key):
+            if key not in self.__D:
                 self.__D[key] = []
             self.__D[key].extend(valueList)
             return True
@@ -120,7 +120,7 @@ class UtilDataStore(object):
 
     def updateDict(self, key, subKey, value):
         try:
-            if not self.__D.has_key(key):
+            if key not in self.__D:
                 self.__D[key] = {}
             self.__D[key][subKey] = value
             return True
