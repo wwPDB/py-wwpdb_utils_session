@@ -33,7 +33,7 @@ class ImportTests(unittest.TestCase):
             os.makedirs(TESTOUTPUT)
         self.__sessiontop = TESTOUTPUT
         sdir = os.path.join(self.__sessiontop, "sessions")
-        if not os.path.exists(sdir):
+        if not os.path.exists(sdir):  # pragma: no cover
             os.makedirs(sdir)
 
     def testInstantiate(self):
@@ -44,11 +44,11 @@ class ImportTests(unittest.TestCase):
         # Needs a valid reqobj
         _vc = UtilDataStore(reqobj)  # noqa: F841
         _vc = WebAppWorkerBase(reqobj)  # noqa: F841
-        _vc = WebDownloadUtils(reqobj)  # noqa: F841
-        _vc = WebUploadUtils(reqobj)  # noqa: F841
+        _vc = WebDownloadUtils(reqobj, verbose=True)  # noqa: F841
+        _vc = WebUploadUtils(reqobj, verbose=True)  # noqa: F841
         _vc = SessionManager()  # noqa: F841
         _vc = FileUtils("xxxx", reqobj)  # noqa: F841
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     unittest.main()

@@ -62,8 +62,6 @@ class WebAppWorkerBase(object):
         # UtilDataStore prefix for general session data -- used by _getSession()
         self._udsPrefix = None
         #
-        # Service items include:
-        # self.__class__.__name__,sys._getframe().f_code.co_name
         self.__appPathD = {}
 
     def addService(self, url, opName):
@@ -128,7 +126,7 @@ class WebAppWorkerBase(object):
             return True
         except Exception as e:
             if self._verbose:
-                self._lfh.write("+%s.%s failed in session %s - %r\n" % ("WebAppWorkerBase", "_saveSessionParameter", self._sessionId, str(e)))
+                self._lfh.write("+WebAppWorkerBase._saveSessionParameter() failed in session %s - %r\n" % (self._sessionId, str(e)))
         return False
 
     def _getSessionParameter(self, param=None, prefix=None):
@@ -139,7 +137,7 @@ class WebAppWorkerBase(object):
             return self._uds.get(param)
         except Exception as e:
             if self._verbose:
-                self._lfh.write("+%s.%s failed in session %s - %r\n" % ("WebAppWorkerBase", "_getSessionParameter", self._sessionId, str(e)))
+                self._lfh.write("+WebAppWorkerBase._getSessionParameter() failed in session %s - %r\n" % (self._sessionId, str(e)))
         return ""
 
     def _getFileText(self, filePath):
@@ -150,7 +148,7 @@ class WebAppWorkerBase(object):
 
     def _newSessionOp(self):
         if self.__debug:
-            self._lfh.write("+%s.%s starting\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))  # pylint: disable=protected-access
+            self._lfh.write("+WebAppWorkerBase.newSessionOp() starting\n")
 
         self._getSession(forceNew=True)
         self._reqObj.setReturnFormat(return_format="json")
@@ -175,7 +173,7 @@ class WebAppWorkerBase(object):
             uds = UtilDataStore(reqObj=self._reqObj, prefix=self._udsPrefix, verbose=self._verbose, log=self._lfh)
             dd = uds.getDictionary()
             if self.__debug:
-                self._lfh.write("+%s.%s -  importing persisted general session parameters:\n" % ("WebAppWorkerBase", "_verifySessionContext"))
+                self._lfh.write("+WebAppWorkerBase._verifySessionContext() -  importing persisted general session parameters:\n")
                 for k, v in dd.items():
                     if isinstance(v, list) or isinstance(v, dict):
                         self._lfh.write(" %30s length=%d\n" % (k, len(v)))
@@ -190,7 +188,7 @@ class WebAppWorkerBase(object):
             return ok
         except Exception as e:
             if self._verbose:
-                self._lfh.write("+%s.%s - failed - %r\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, str(e)))  # pylint: disable=protected-access
+                self._lfh.write("+WebAppWorkerBase._verifySessionContext() - failed - %r\n" % str(e))
             if self._verbose:
                 traceback.print_exc(file=self._lfh)
         return False
@@ -206,14 +204,14 @@ class WebAppWorkerBase(object):
         self._rltvSessionPath = self._sObj.getRelativePath()
 
         if self._verbose:
-            self._lfh.write("+%s.%s - session   id  %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionId))  # pylint: disable=protected-access
-            self._lfh.write("+%s.%s - session path  %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionPath))  # pylint: disable=protected-access
+            self._lfh.write("+WebAppWorkerBase._getSession() - session   id  %s\n" % self._sessionId)
+            self._lfh.write("+WebAppWorkerBase._getSession() - session path  %s\n" % self._sessionPath)
 
         if useContext:
             uds = UtilDataStore(reqObj=self._reqObj, prefix=self._udsPrefix, verbose=self._verbose, log=self._lfh)
             dd = uds.getDictionary()
             if self.__debug:
-                self._lfh.write("+%s.%s -  importing persisted general session parameters:\n" % ("WebAppWorkerBase", "_getSession"))
+                self._lfh.write("+WebAppWorkerBase._getSession() -  importing persisted general session parameters:\n")
                 for k, v in dd.items():
                     if isinstance(v, list) or isinstance(v, dict):
                         self._lfh.write(" %30s length=%d\n" % (k, len(v)))
@@ -255,7 +253,7 @@ class WebAppWorkerBase(object):
             #
             fPathAbs = os.path.join(self._sessionPath, fName)
             if self._verbose:
-                self._lfh.write("+%s.%s - starting upload of %r to path %r\n" % ("WebAppWorkerBase", "_uploadFile", fNameInput, fPathAbs))
+                self._lfh.write("+WebAppWorkerBase._uploadFile() - starting upload of %r to path %r\n" % (fNameInput, fPathAbs))
 
             ofh = open(fPathAbs, "wb")
             ofh.write(fs.file.read())
@@ -263,7 +261,7 @@ class WebAppWorkerBase(object):
 
             #
             if self._verbose:
-                self._lfh.write("+%s.%s - uploaded completed for file tag %s file name %s\n" % ("WebAppWorkerBase", "_uploadFile", fileTag, fName))
+                self._lfh.write("+WebAppWorkerBase._uploadFile() - uploaded completed for file tag %s file name %s\n" % (fileTag, fName))
             #
             #  Store the file path and name in request object -
             #
@@ -272,7 +270,7 @@ class WebAppWorkerBase(object):
             return fName
         except Exception as e:
             if self._verbose:
-                self._lfh.write("+%s.%s - Upload failed for file tag %s file name %s - %r\n" % ("WebAppWorkerBase", "_uploadFile", fileTag, fs.filename, str(e)))
+                self._lfh.write("+WebAppWorkerBase._uploadFile() - Upload failed for file tag %s file name %s - %r\n" % (fileTag, fs.filename, str(e)))
             if self.__debug:
                 traceback.print_exc(file=self._lfh)
         return None
