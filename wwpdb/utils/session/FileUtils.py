@@ -46,7 +46,7 @@ class FileUtils(object):
         self.__entryId = entryId
         siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
         # This is for viewing the entries from the standalone validation server from annotation --
-        if siteId in ["WWPDB_DEPLOY_PRODUCTION_RU", "WWPDB_DEPLOY_VALSRV_RU", "WWPDB_DEPLOY_TEST", "WWPDB_DEPLOY_INTERNAL_RU"] and entryId.startswith('D_90'):
+        if siteId in ["WWPDB_DEPLOY_PRODUCTION_RU", "WWPDB_DEPLOY_VALSRV_RU", "WWPDB_DEPLOY_TEST", "WWPDB_DEPLOY_INTERNAL_RU"] and entryId.startswith("D_90"):
             siteId = "WWPDB_DEPLOY_VALSRV_RU"
         #
         self.__setup(siteId=siteId)
@@ -66,36 +66,89 @@ class FileUtils(object):
         self.__cleanup = False
         self.__currentHeaderFilePath = None
         self.__cI = ConfigInfo(self.__siteId)
-        self.__cD = self.__cI.get('CONTENT_TYPE_DICTIONARY')
-        self.__msL = self.__cI.get('CONTENT_MILESTONE_LIST')
+        self.__cD = self.__cI.get("CONTENT_TYPE_DICTIONARY")
+        self.__msL = self.__cI.get("CONTENT_MILESTONE_LIST")
         #
-        self.__rDList = ['Primary Data Files', 'Chemical Assignment Files', 'Sequence Assignment Files', 'Annotation Task Files', 'Check reports',
-                         'Message Files', '3DEM Files']
-        self.__rD = {'Primary Data Files': ['model', 'structure-factors', 'nmr-restraints', 'nmr-chemical-shifts', 'nmr-peaks', 'em-volume', 'em-mask', 'img-emdb'],
+        self.__rDList = ["Primary Data Files", "Chemical Assignment Files", "Sequence Assignment Files", "Annotation Task Files", "Check reports", "Message Files", "3DEM Files"]
+        self.__rD = {
+            "Primary Data Files": ["model", "structure-factors", "nmr-restraints", "nmr-chemical-shifts", "nmr-peaks", "em-volume", "em-mask", "img-emdb"],
+            "Chemical Assignment Files": [
+                "chem-comp-link",
+                "chem-comp-assign",
+                "chem-comp-assign-final",
+                "chem-comp-assign-details",
+                "chem-comp-depositor-info",
+                "prd-search",
+                "component-image",
+                "component-definition",
+                "auxiliary-file",
+            ],
+            "Sequence Assignment Files": [
+                "seqdb-match",
+                "blast-match",
+                "seq-assign",
+                "seq-data-stats",
+                "seq-align-data",
+                "polymer-linkage-distances",
+                "polymer-linkage-report",
+                "sequence-fasta",
+                "partial-seq-annotate",
+            ],
+            "Annotation Task Files": [
+                "assembly-report",
+                "assembly-assign",
+                "interface-assign",
+                "assembly-model",
+                "assembly-model-xyz",
+                "site-assign",
+                "map-2fofc",
+                "map-fofc",
+                "secondary-structure-topology",
+                "map-header-data",
+                "fsc",
+            ],
+            "Check reports": [
+                "validation-report-depositor",
+                "geometry-check-report",
+                "polymer-linkage-report",
+                "dict-check-report",
+                "dict-check-report-r4",
+                "dict-check-report-next",
+                "format-check-report",
+                "misc-check-report",
+                "special-position-report",
+                "merge-xyz-report",
+                "nmr-cs-check-report",
+                "nmr-cs-xyz-check-report",
+                "validation-report",
+                "validation-report-full",
+                "validation-report-slider",
+                "validation-data",
+                "validation-report-2fo-map-coef",
+                "validation-report-fo-map-coef",
+                "sf-convert-report",
+                "dcc-report",
+                "mapfix-report",
+                "fsc-report",
+                "em2em-report",
+            ],
+            "Message Files": ["messages-from-depositor", "messages-to-depositor", "notes-from-annotator", "correspondence-to-depositor"],
+            "3DEM Files": [
+                "em-volume",
+                "em-mask-volume",
+                "em-additional-volume",
+                "em-half-volume",
+                "em-volume-header",
+                "em-model-emd",
+                "em2em-report",
+                "img-emdb",
+                "img-emdb-report",
+                "layer-lines",
+                "auxiliary-file",
+            ],
+        }
 
-                     'Chemical Assignment Files': ['chem-comp-link', 'chem-comp-assign', 'chem-comp-assign-final', 'chem-comp-assign-details', 'chem-comp-depositor-info',
-                                                   'prd-search', 'component-image', 'component-definition', 'auxiliary-file'],
-
-                     'Sequence Assignment Files': ['seqdb-match', 'blast-match', 'seq-assign', 'seq-data-stats', 'seq-align-data', 'polymer-linkage-distances',
-                                                   'polymer-linkage-report', 'sequence-fasta', 'partial-seq-annotate'],
-                     'Annotation Task Files': ['assembly-report', 'assembly-assign', 'interface-assign', 'assembly-model', 'assembly-model-xyz', 'site-assign', 'map-2fofc',
-                                               'map-fofc', 'secondary-structure-topology', 'map-header-data',
-                                               'fsc'],
-
-                     'Check reports': ['validation-report-depositor', 'geometry-check-report', 'polymer-linkage-report',
-                                       'dict-check-report', 'dict-check-report-r4', 'dict-check-report-next',
-                                       'format-check-report', 'misc-check-report', 'special-position-report', 'merge-xyz-report', 'nmr-cs-check-report',
-                                       'nmr-cs-xyz-check-report', 'validation-report', 'validation-report-full',
-                                       'validation-report-slider', 'validation-data', 'validation-report-2fo-map-coef', 'validation-report-fo-map-coef',
-                                       'sf-convert-report', 'dcc-report', 'mapfix-report', 'fsc-report',
-                                       'em2em-report'],
-
-                     'Message Files': ['messages-from-depositor', 'messages-to-depositor', 'notes-from-annotator', 'correspondence-to-depositor'],
-                     '3DEM Files': ['em-volume', 'em-mask-volume', 'em-additional-volume', 'em-half-volume', 'em-volume-header',
-                                    'em-model-emd', 'em2em-report', 'img-emdb', 'img-emdb-report', 'layer-lines', 'auxiliary-file']
-                     }
-
-    def renderFileList(self, fileSource='archive', rDList=None, titlePrefix='', titleSuffix='', displayImageFlag=False):
+    def renderFileList(self, fileSource="archive", rDList=None, titlePrefix="", titleSuffix="", displayImageFlag=False):
         """
         """
         if rDList is None:
@@ -103,7 +156,7 @@ class FileUtils(object):
 
         htmlList = []
         nTot = 0
-        if fileSource in ['archive', 'deposit', 'wf-archive']:
+        if fileSource in ["archive", "deposit", "wf-archive"]:
             for ky in rDList:
                 if ky not in self.__rD:
                     continue
@@ -113,31 +166,31 @@ class FileUtils(object):
                 fList.extend(ctList)
                 for ct in ctList:
                     for ms in self.__msL:
-                        mt = ct + '-' + ms
+                        mt = ct + "-" + ms
                         fList.append(mt)
-                nF, oL = self.__renderContentTypeFileList(self.__entryId, fileSource=fileSource,
-                                                          wfInstanceId=None, contentTypeList=fList,
-                                                          title=title, displayImageFlag=displayImageFlag)
+                nF, oL = self.__renderContentTypeFileList(
+                    self.__entryId, fileSource=fileSource, wfInstanceId=None, contentTypeList=fList, title=title, displayImageFlag=displayImageFlag
+                )
                 if nF > 0:
                     htmlList.extend(oL)
                     nTot += nF
 
-        if fileSource in ['archive', 'wf-archive']:
-            nF, oL = self.__renderLogFileList(self.__entryId, fileSource='archive', title="Archive Log Files")
+        if fileSource in ["archive", "wf-archive"]:
+            nF, oL = self.__renderLogFileList(self.__entryId, fileSource="archive", title="Archive Log Files")
             if nF > 0:
                 htmlList.extend(oL)
                 nTot += nF
 
-        if fileSource in ['deposit']:
-            nF, oL = self.__renderLogFileList(self.__entryId, fileSource='deposit', title="Deposit Log Files")
+        if fileSource in ["deposit"]:
+            nF, oL = self.__renderLogFileList(self.__entryId, fileSource="deposit", title="Deposit Log Files")
             if nF > 0:
                 htmlList.extend(oL)
                 nTot += nF
 
         #
-        if fileSource in ['wf-instance', 'instance']:
+        if fileSource in ["wf-instance", "instance"]:
             iTopPath = self.__pI.getInstanceTopPath(self.__entryId)
-            fPattern = os.path.join(iTopPath, '*')
+            fPattern = os.path.join(iTopPath, "*")
             wfInstancePathList = filter(os.path.isdir, glob.glob(fPattern))
             for wfInstancePath in wfInstancePathList:
                 (_pth, wfInstId) = os.path.split(wfInstancePath)
@@ -149,38 +202,39 @@ class FileUtils(object):
         #
         return nTot, htmlList
 
-    def __renderContentTypeFileList(self, entryId, fileSource='archive', wfInstanceId=None, contentTypeList=None, title=None, displayImageFlag=False):
+    def __renderContentTypeFileList(self, entryId, fileSource="archive", wfInstanceId=None, contentTypeList=None, title=None, displayImageFlag=False):
         if contentTypeList is None:
             contentTypeList = ["model"]
         if self.__verbose:
-            self.__lfh.write("+FileUtils.renderContentTypeFileList() entryId %r fileSource %r wfInstanceId %r contentTypeList %r \n" %
-                             (entryId, fileSource, wfInstanceId, contentTypeList))
-        de = DataExchange(reqObj=self.__reqObj, depDataSetId=entryId, wfInstanceId=wfInstanceId,
-                          fileSource=fileSource, siteId=self.__siteId,
-                          verbose=self.__verbose, log=self.__lfh)
+            self.__lfh.write(
+                "+FileUtils.renderContentTypeFileList() entryId %r fileSource %r wfInstanceId %r contentTypeList %r \n" % (entryId, fileSource, wfInstanceId, contentTypeList)
+            )
+        de = DataExchange(
+            reqObj=self.__reqObj, depDataSetId=entryId, wfInstanceId=wfInstanceId, fileSource=fileSource, siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh
+        )
         tupL = de.getContentTypeFileList(fileSource=fileSource, contentTypeList=contentTypeList)
         #
         rTupL = []
         for tup in tupL:
             href, fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
-                sz = '%d' % int(tup[2])
+                sz = "%d" % int(tup[2])
             else:
                 sz = "%.3f" % tup[2]
             rTup = (href, tup[1], sz)
             rTupL.append(rTup)
-            if displayImageFlag and fN.startswith(entryId + '_img-emdb'):
+            if displayImageFlag and fN.startswith(entryId + "_img-emdb"):
                 imgFile = os.path.join(self.__sessionPath, fN)
                 if os.access(imgFile, os.F_OK):
                     os.remove(imgFile)
                 #
                 os.symlink(tup[0], imgFile)
-                imgHtml = '<img src="/sessions/' + self.__sessionId + '/' + fN + '" border="0" alt="Image" width="400" height="400">'
-                rTupL.append(('displayImage', imgHtml, ''))
+                imgHtml = '<img src="/sessions/' + self.__sessionId + "/" + fN + '" border="0" alt="Image" width="400" height="400">'
+                rTupL.append(("displayImage", imgHtml, ""))
             #
         #
         if title is None:
-            cS = ','.join(contentTypeList)
+            cS = ",".join(contentTypeList)
             title = "File Source %s (%s)" % (fileSource, cS)
         nF, htmlList = self.__renderFileList(rTupL, title)
 
@@ -190,7 +244,7 @@ class FileUtils(object):
         if self.__verbose:
             self.__lfh.write("+FileUtils.renderWfInstanceFileList() wfPath %s\n" % wfPath)
 
-        wfPattern = os.path.join(wfPath, '*')
+        wfPattern = os.path.join(wfPath, "*")
         de = DataExchange(reqObj=self.__reqObj, depDataSetId=entryId, wfInstanceId=None, fileSource=None, siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         tupL = de.getMiscFileList(fPatternList=[wfPattern], sortFlag=True)
         #
@@ -198,7 +252,7 @@ class FileUtils(object):
         for tup in tupL:
             href, _fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
-                sz = '%d' % int(tup[2])
+                sz = "%d" % int(tup[2])
             else:
                 sz = "%.3f" % tup[2]
             rTup = (href, tup[1], sz)
@@ -210,7 +264,7 @@ class FileUtils(object):
 
         return nF, htmlList
 
-    def __renderLogFileList(self, entryId, fileSource='archive', title=None):
+    def __renderLogFileList(self, entryId, fileSource="archive", title=None):
         if self.__verbose:
             self.__lfh.write("+FileUtils.renderLogFileList() entryId %r fileSource %r\n" % (entryId, fileSource))
         de = DataExchange(reqObj=self.__reqObj, depDataSetId=entryId, wfInstanceId=None, fileSource=fileSource, siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
@@ -220,7 +274,7 @@ class FileUtils(object):
         for tup in tupL:
             href, _fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
-                sz = '%d' % int(tup[2])
+                sz = "%d" % int(tup[2])
             else:
                 sz = "%.3f" % tup[2]
             rTup = (href, tup[1], sz)
@@ -240,26 +294,26 @@ class FileUtils(object):
                 oL.append('<table class="table table-bordered table-striped table-condensed">')
                 oL.append('<tr><th class="width50">%s</th><th class="width30">Modification Time</th><th class="width20">Size (KBytes)</th></tr>' % title)
             else:
-                oL.append('<h4>%s</h4>' % title)
+                oL.append("<h4>%s</h4>" % title)
                 oL.append('<table class="table table-bordered table-striped table-condensed">')
                 oL.append('<tr><th class="width50">Files</th><th class="width30">Modification Time</th><th class="width20">Size (KBytes)</th></tr>')
             for tup in fileTupleList:
-                oL.append('<tr>')
-                if tup[0] == 'displayImage':
+                oL.append("<tr>")
+                if tup[0] == "displayImage":
                     oL.append('<td align="center" colspan="3">%s</td>' % tup[1])
                 else:
-                    oL.append('<td>%s</td>' % tup[0])
-                    oL.append('<td>%s</td>' % tup[1])
-                    oL.append('<td>%s</td>' % tup[2])
+                    oL.append("<td>%s</td>" % tup[0])
+                    oL.append("<td>%s</td>" % tup[1])
+                    oL.append("<td>%s</td>" % tup[2])
                 #
-                oL.append('</tr>')
+                oL.append("</tr>")
             #
-            oL.append('</table>')
+            oL.append("</table>")
         #
         return len(fileTupleList), oL
 
     def __makeDownloadHref(self, filePath):
         _dP, fN = os.path.split(filePath)
-        tS = '/service/review_v2/download_file?sessionid=' + self.__sessionId + '&file_path=' + filePath
+        tS = "/service/review_v2/download_file?sessionid=" + self.__sessionId + "&file_path=" + filePath
         href = "<a class='my-file-downloadable' href='" + tS + "'>" + fN + "</a>"
         return href, fN

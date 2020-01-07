@@ -27,12 +27,12 @@ class SessionTests(unittest.TestCase):
         # Not set
         self.assertEqual(sm.getId(), None)
 
-        sm.setId('12345')
-        self.assertEqual(sm.getId(), '12345')
+        sm.setId("12345")
+        self.assertEqual(sm.getId(), "12345")
 
         self.assertNotEqual(sm.assignId(), None, "Failed to return id")
-        self.assertNotEqual(sm.getId(), '12345', "Failed to generate new id")
+        self.assertNotEqual(sm.getId(), "12345", "Failed to generate new id")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

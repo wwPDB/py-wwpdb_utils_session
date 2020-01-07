@@ -14,6 +14,7 @@ Provide a storage interface for miscellaneous key,value data.
 """
 import sys
 import os.path
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -40,6 +41,7 @@ class UtilDataStore(object):
         else:
             self.__filePrefix = "general"
         self.__filePath = None
+        self.__D = {}
         self.__setup()
 
     def __setup(self):
@@ -47,20 +49,20 @@ class UtilDataStore(object):
         self.__sObj = self.__reqObj.getSessionObj()
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__D = {}
         #
         # self.__pickleProtocol = pickle.HIGHEST_PROTOCOL
         self.__pickleProtocol = 0
         try:
             self.__filePath = os.path.join(self.__sessionPath, self.__filePrefix + "-util-session.pic")
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("\n+UtilDataStore.__setup() - data store path %s\n" % self.__filePath)
             self.deserialize()
         except Exception as e:
-            if (self.__debug):
+            if self.__debug:
                 self.__lfh.write(
-                    "\n+UtilDataStore.__setup() - Failed to open data store for session id %s data store prefix %s path %s err %s\n" %
-                    (self.__sessionId, self.__filePrefix, self.__filePath, str(e)))
+                    "\n+UtilDataStore.__setup() - Failed to open data store for session id %s data store prefix %s path %s err %s\n"
+                    % (self.__sessionId, self.__filePrefix, self.__filePath, str(e))
+                )
 
     def reset(self):
         self.__D = {}
@@ -70,32 +72,32 @@ class UtilDataStore(object):
 
     def serialize(self):
         try:
-            fb = open(self.__filePath, 'wb')
+            fb = open(self.__filePath, "wb")
             pickle.dump(self.__D, fb, self.__pickleProtocol)
             fb.close()
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
 
     def deserialize(self):
         try:
-            fb = open(self.__filePath, 'rb')
+            fb = open(self.__filePath, "rb")
             self.__D = pickle.load(fb)
             fb.close()
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def get(self, key):
         try:
-            return (self.__D[key])
-        except:  # noqa: E722
-            return ''
+            return self.__D[key]
+        except:  # noqa: E722 pylint: disable=bare-except
+            return ""
 
     def set(self, key, value):
         try:
             self.__D[key] = value
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def append(self, key, value):
@@ -104,7 +106,7 @@ class UtilDataStore(object):
                 self.__D[key] = []
             self.__D[key].append(value)
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def extend(self, key, valueList):
@@ -113,7 +115,7 @@ class UtilDataStore(object):
                 self.__D[key] = []
             self.__D[key].extend(valueList)
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def updateDict(self, key, subKey, value):
@@ -122,7 +124,7 @@ class UtilDataStore(object):
                 self.__D[key] = {}
             self.__D[key][subKey] = value
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def getDictionary(self):

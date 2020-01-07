@@ -33,6 +33,7 @@ class SessionManager(object):
         Utilities for session directory maintenance.
 
     """
+
     def __init__(self, topPath=".", verbose=False):
         """
              Organization of session directory is --
@@ -61,20 +62,20 @@ class SessionManager(object):
 
     def assignId(self):
         # Need to convert to str (python2)/bytes (python3)
-        tmp = repr(time.time()).encode('utf-8')
+        tmp = repr(time.time()).encode("utf-8")
         self.__uid = hashlib.sha1(tmp).hexdigest()
         return self.__uid
 
     def getPath(self):
         try:
             pth = os.path.join(self.__topSessionPath, "sessions", self.__uid)
-            if (self.__verbose):
+            if self.__verbose:
                 sys.stderr.write("+SessionManager.getPath() path %s\n" % pth)
             if os.access(pth, os.F_OK):
                 return pth
             else:
                 return None
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return None
 
     def getTopPath(self):
@@ -85,7 +86,7 @@ class SessionManager(object):
         try:
             pth = os.path.join("/sessions", self.__uid)
 
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
         return pth
 
@@ -95,18 +96,18 @@ class SessionManager(object):
         """
         try:
             pth = os.path.join(self.__topSessionPath, "sessions", self.__uid)
-            if (not os.access(pth, os.F_OK)):
+            if not os.access(pth, os.F_OK):
                 os.makedirs(pth)
             return pth
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return None
 
     def remakeSessionPath(self):
         try:
             pth = os.path.join(self.__topSessionPath, "sessions", self.__uid)
-            if (os.access(pth, os.F_OK)):
+            if os.access(pth, os.F_OK):
                 shutil.rmtree(pth, True)
             os.makedirs(pth)
             return pth
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return None

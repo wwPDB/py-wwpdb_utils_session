@@ -20,6 +20,7 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.09"
 
 import sys
+import ntpath
 import os
 import types
 import traceback
@@ -43,76 +44,76 @@ class WebUploadUtils(object):
         self.__sessionObj = self.__reqObj.getSessionObj()
         self.__sessionPath = self.__sessionObj.getPath()
         #
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebUploadUtils.__setup() - session id   %s\n" % (self.__sessionObj.getId()))
             self.__lfh.write("+WebUploadUtils.__setup() - session path %s\n" % (self.__sessionPath))
 
-    def isFileUpload(self, fileTag='file'):
+    def isFileUpload(self, fileTag="file"):
         """ Generic check for the existence of request paramenter "fileTag=".
         """
         # Gracefully exit if no file is provide in the request object -
         fs = self.__reqObj.getRawValue(fileTag)
 
-        if (self.__debug):
+        if self.__debug:
             self.__lfh.write("+WebUploadUtils.isFileUpLoad() fs  %r\n" % fs)
 
         if sys.version_info[0] < 3:
-            if ((fs is None) or (isinstance(fs, types.StringType)) or (isinstance(fs, types.UnicodeType))):
+            if (fs is None) or (isinstance(fs, types.StringType)) or (isinstance(fs, types.UnicodeType)):  # pylint: disable=no-member
                 return False
         else:
-            if ((fs is None) or (isinstance(fs, str)) or (isinstance(fs, bytes))):
+            if (fs is None) or (isinstance(fs, str)) or (isinstance(fs, bytes)):
                 return False
         return True
 
-    def getUploadFileName(self, fileTag='file'):
+    def getUploadFileName(self, fileTag="file"):
         """  Get the user supplied name of for the uploaded file -
         """
         #
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebUploadUtils.getUploadFileName() - operation started\n")
         #
         try:
             fs = self.__reqObj.getRawValue(fileTag)
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.getUploadFileName() - upload file descriptor fs =     %r\n" % fs)
                 self.__lfh.write("+WebUploadUtils.getUploadFileName() - upload file descriptor fs =     %s\n" % fs)
             formRequestFileName = str(fs.filename).strip()
 
             #
-            if (formRequestFileName.find('\\') != -1):
-                uploadInputFileName = os.ntpath.basename(formRequestFileName)
+            if formRequestFileName.find("\\") != -1:
+                uploadInputFileName = ntpath.basename(formRequestFileName)
             else:
                 uploadInputFileName = os.path.basename(formRequestFileName)
 
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.getUploadFileName() Uploaded file name %s\n" % str(uploadInputFileName))
             #
             return uploadInputFileName
         except Exception as e:
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.getUploadFileName() processing failed %s\n" % str(e))
                 traceback.print_exc(file=self.__lfh)
         return None
 
-    def copyToSession(self, fileTag='file', sessionFileName=None, uncompress=True):
+    def copyToSession(self, fileTag="file", sessionFileName=None, uncompress=True):
         """  Copy uploaded file identified form element name 'fileTag' to the current session directory.
 
              File is copied to user uploaded file or to the sessionFileName if this is provided.
         """
         #
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebUploadUtils.copyToSession() - operation started\n")
 
         #
         try:
             fs = self.__reqObj.getRawValue(fileTag)
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.copyToSession() - upload file descriptor fs =     %r\n" % fs)
             # formRequestFileName = str(fs.filename).strip().lower()
             formRequestFileName = str(fs.filename).strip()
 
             #
-            if (formRequestFileName.find('\\') != -1):
+            if formRequestFileName.find("\\") != -1:
                 uploadInputFileName = os.ntpath.basename(formRequestFileName)
             else:
                 uploadInputFileName = os.path.basename(formRequestFileName)
@@ -127,40 +128,40 @@ class WebUploadUtils(object):
 
             sessionInputFilePath = os.path.join(self.__sessionPath, sessionInputFileName)
 
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.copyToSession() - user request file name     %s\n" % fs.filename)
                 self.__lfh.write("+WebUploadUtils.copyToSession() - upload input file name     %s\n" % uploadInputFileName)
                 self.__lfh.write("+WebUploadUtils.copyToSession() - session target file path   %s\n" % sessionInputFilePath)
                 self.__lfh.write("+WebUploadUtils.copyToSession() - session target file name   %s\n" % sessionInputFileName)
             #
-            ofh = open(sessionInputFilePath, 'wb')
+            ofh = open(sessionInputFilePath, "wb")
             ofh.write(fs.file.read())
             ofh.close()
             #
-            if (uncompress and sessionInputFilePath.endswith(".gz")):
-                if (self.__verbose):
+            if uncompress and sessionInputFilePath.endswith(".gz"):
+                if self.__verbose:
                     self.__lfh.write("+WebUploadUtils.copyToSession() uncompressing file %s\n" % str(sessionInputFilePath))
                 self.__copyGzip(sessionInputFilePath, sessionInputFilePath[:-3])
                 sessionInputFileName = sessionInputFileName[:-3]
 
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.copyToSession() Uploaded file %s\n" % str(sessionInputFileName))
             #
             return sessionInputFileName
-        except:  # noqa: E722
-            if (self.__verbose):
+        except:  # noqa: E722 pylint: disable=bare-except
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.copyToSession() File upload processing failed\n")
                 traceback.print_exc(file=self.__lfh)
             return None
 
     def renameSessionFile(self, srcFileName, dstFileName):
         try:
-            if (srcFileName != dstFileName):
+            if srcFileName != dstFileName:
                 srcPath = os.path.join(self.__sessionPath, srcFileName)
                 dstPath = os.path.join(self.__sessionPath, dstFileName)
                 shutil.copyfile(srcPath, dstPath)
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def getFileExtension(self, fileName, ignoreVersion=False):
@@ -176,20 +177,20 @@ class WebUploadUtils(object):
             return fExt
 
         try:
-            fL = str(fileName).split('.')
+            fL = str(fileName).split(".")
             if len(fL) < 2:
                 return fExt
 
             if ignoreVersion and len(fL) > 2:
                 tExt = fL[-1]
-                if ((tExt.startswith('V') or tExt.startswith('v')) and tExt[1:].isdigit()):
+                if (tExt.startswith("V") or tExt.startswith("v")) and tExt[1:].isdigit():
                     fExt = fL[-2]
                 else:
                     fExt = tExt
             else:
                 if len(fL) > 1:
                     fExt = fL[-1]
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
 
         return fExt
@@ -205,30 +206,30 @@ class WebUploadUtils(object):
         if fileName is None or len(fileName) < 1:
             return fId, fType
 
-        (head, tail) = os.path.splitext(str(fileName))
+        (head, _tail) = os.path.splitext(str(fileName))
         headLC = head.upper()
-        if headLC.startswith('RCSB'):
+        if headLC.startswith("RCSB"):
             fId = head
-            fType = 'RCSB'
-        elif headLC.startswith('D_'):
+            fType = "RCSB"
+        elif headLC.startswith("D_"):
             fId = head
             fType = "WF_ARCHIVE"
             #
             # Look for
             #
-            fields = head.split('_')
+            fields = head.split("_")
             if len(fields) > 1:
-                fId = '_'.join(fields[:2])
-        elif headLC.startswith('W_'):
+                fId = "_".join(fields[:2])
+        elif headLC.startswith("W_"):
             fId = head
             fType = "WF_INSTANCE"
         else:
             fId = head
             fType = "UNKNOWN"
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+WebUploadUtils.perceiveIdentifier() using non-standard identifier %r for %r\n" % (head, str(fileName)))
 
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebUploadUtils.perceiveIdentifier() using identifier fId %r and file source %r \n" % (fId, fType))
 
         return fId, fType
@@ -240,7 +241,7 @@ class WebUploadUtils(object):
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
             os.system(cmd)
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return False

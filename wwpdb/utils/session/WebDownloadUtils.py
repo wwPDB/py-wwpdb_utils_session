@@ -51,6 +51,7 @@ class WebDownloadUtils(object):
      This class encapsulates handling download requests for workflow data files -
 
     """
+
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
 
         self.__reqObj = reqObj
@@ -61,11 +62,11 @@ class WebDownloadUtils(object):
         #
         self.__sessionObj = self.__reqObj.getSessionObj()
         self.__sessionPath = self.__sessionObj.getPath()
-        self.__siteId = self.__reqObj.getValue('WWPDB_SITE_ID')
+        self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
 
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
         #
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.__setup() - session id   %s\n" % (self.__sessionObj.getId()))
             self.__lfh.write("+WebDownloadUtils.__setup() - session path %s\n" % (self.__sessionPath))
 
@@ -73,11 +74,11 @@ class WebDownloadUtils(object):
         """  Return a response object correponding to a download action for data file described by the
              parameter content in the request object.
         """
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.makeResponse() starting with session path %s\n" % self.__sessionPath)
         filePath = self.__getDownloadFileInfo()
 
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.makeResponse() target file path is %s\n" % filePath)
         return self.__makeResponseContentObject(filePath=filePath)
 
@@ -87,47 +88,43 @@ class WebDownloadUtils(object):
         """
         retPath = None
         #
-        dataSetId = self.__reqObj.getValue('data_set_id')
+        dataSetId = self.__reqObj.getValue("data_set_id")
         if len(dataSetId) < 1:
             return retPath
 
-        fileSource = self.__reqObj.getValueOrDefault('file_source', default='archive')
-        if fileSource not in ['archive', 'wf-archive', 'wf-instance', 'session', 'wf-session']:
+        fileSource = self.__reqObj.getValueOrDefault("file_source", default="archive")
+        if fileSource not in ["archive", "wf-archive", "wf-instance", "session", "wf-session"]:
             return retPath
 
-        wfInstanceId = self.__reqObj.getValueOrDefault('wf_instance', default=None)
+        wfInstanceId = self.__reqObj.getValueOrDefault("wf_instance", default=None)
 
-        contentType = self.__reqObj.getValue('content_type')
+        contentType = self.__reqObj.getValue("content_type")
         if len(contentType) < 1:
             return retPath
 
-        formatType = self.__reqObj.getValueOrDefault('format', default='pdbx')
-        versionId = self.__reqObj.getValueOrDefault('version', default='latest')
-        partNumber = self.__reqObj.getValueOrDefault('part', '1')
+        formatType = self.__reqObj.getValueOrDefault("format", default="pdbx")
+        versionId = self.__reqObj.getValueOrDefault("version", default="latest")
+        partNumber = self.__reqObj.getValueOrDefault("part", "1")
         #
 
-        retPath = self.__pI.getFilePath(dataSetId,
-                                        wfInstanceId=wfInstanceId,
-                                        contentType=contentType,
-                                        formatType=formatType,
-                                        fileSource=fileSource,
-                                        versionId=versionId,
-                                        partNumber=partNumber)
+        retPath = self.__pI.getFilePath(
+            dataSetId, wfInstanceId=wfInstanceId, contentType=contentType, formatType=formatType, fileSource=fileSource, versionId=versionId, partNumber=partNumber
+        )
         return retPath
 
     def __makeResponseContentObject(self, filePath, attachmentFlag=True, compressFlag=False):
         """  Create a response content object for the input file
 
         """
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.__makeResponseContentObject() starting with file path %s\n" % filePath)
         #
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         if filePath is not None and os.access(filePath, os.F_OK):
-            rC.setReturnFormat('binary')
+            rC.setReturnFormat("binary")
             rC.setBinaryFile(filePath, attachmentFlag=attachmentFlag, serveCompressed=compressFlag)
         else:
-            rC.setReturnFormat('json')
-            rC.setError(errMsg='Download failure for %s' % filePath)
+            rC.setReturnFormat("json")
+            rC.setError(errMsg="Download failure for %s" % filePath)
 
         return rC
