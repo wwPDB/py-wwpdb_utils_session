@@ -26,7 +26,6 @@ import os
 import sys
 import time
 import types
-import string
 import traceback
 import ntpath
 #
@@ -103,7 +102,7 @@ class WebAppWorkerBase(object):
                 mth = getattr(self, self.__appPathD[reqPath], None)
                 rC = mth()
             return rC
-        except:
+        except:  # noqa: E722
             if self.__debug:
                 traceback.print_exc(file=self._lfh)
             rC = ResponseContent(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
@@ -126,9 +125,9 @@ class WebAppWorkerBase(object):
                     self._uds.set(k, v)
                 self._uds.serialize()
             return True
-        except:
+        except Exception as e:
             if (self._verbose):
-                self._lfh.write("+%s.%s failed in session %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionId))
+                self._lfh.write("+%s.%s failed in session %s - %r\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionId, str(e)))
         return False
 
     def _getSessionParameter(self, param=None, prefix=None):
@@ -137,9 +136,9 @@ class WebAppWorkerBase(object):
         try:
             self._uds = UtilDataStore(reqObj=self._reqObj, prefix=prefix, verbose=self._verbose, log=self._lfh)
             return self._uds.get(param)
-        except:
+        except Exception as e:
             if (self._verbose):
-                self._lfh.write("+%s.%s failed in session %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionId))
+                self._lfh.write("+%s.%s failed in session %s - %r\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionId, str(e)))
         return ''
 
     def _getFileText(self, filePath):
@@ -188,9 +187,9 @@ class WebAppWorkerBase(object):
             reqApiKey = self._reqObj.getValue("apikey")
             ok = apikyfn(reqApiKey)
             return ok
-        except:
+        except Exception as e:
             if (self._verbose):
-                self._lfh.write("+%s.%s - failed\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+                self._lfh.write("+%s.%s - failed - %r\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, str(e)))
             if (self._verbose):
                 traceback.print_exc(file=self._lfh)
         return False
@@ -198,8 +197,6 @@ class WebAppWorkerBase(object):
     def _getSession(self, forceNew=False, useContext=False, overWrite=True):
         """ Join existing session or create new session as required.
         """
-        #
-        sessionId = self._reqObj.getSessionId()
         #
         self._sObj = self._reqObj.newSessionObj(forceNew=forceNew)
 
@@ -272,9 +269,9 @@ class WebAppWorkerBase(object):
             self._reqObj.setValue("filePath", fPathAbs)
             self._reqObj.setValue("fileName", fName)
             return fName
-        except:
+        except Exception as e:
             if (self._verbose):
-                self._lfh.write("+%s.%s - Upload failed for file tag %s file name %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, fileTag, fs.filename))
+                self._lfh.write("+%s.%s - Upload failed for file tag %s file name %s - %r\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, fileTag, fs.filename, str(e)))
             if (self.__debug):
                 traceback.print_exc(file=self._lfh)
         return None
@@ -323,6 +320,6 @@ class WebAppWorkerBase(object):
             lines = fp.readlines()
             fp.close()
             sval = lines[0][:-1]
-        except:
+        except:  # noqa: E722
             sval = "FAIL"
         return sval

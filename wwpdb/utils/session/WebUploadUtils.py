@@ -22,7 +22,6 @@ __version__ = "V0.09"
 import sys
 import os
 import types
-import string
 import traceback
 import shutil
 
@@ -81,7 +80,7 @@ class WebUploadUtils(object):
 
             #
             if (formRequestFileName.find('\\') != -1):
-                uploadInputFilefName = ntpath.basename(formRequestFileName)
+                uploadInputFileName = os.ntpath.basename(formRequestFileName)
             else:
                 uploadInputFileName = os.path.basename(formRequestFileName)
 
@@ -89,9 +88,9 @@ class WebUploadUtils(object):
                 self.__lfh.write("+WebUploadUtils.getUploadFileName() Uploaded file name %s\n" % str(uploadInputFileName))
             #
             return uploadInputFileName
-        except:
+        except Exception as e:
             if (self.__verbose):
-                self.__lfh.write("+WebUploadUtils.getUploadFileName() processing failed\n")
+                self.__lfh.write("+WebUploadUtils.getUploadFileName() processing failed %s\n" % str(e))
                 traceback.print_exc(file=self.__lfh)
         return None
 
@@ -109,12 +108,12 @@ class WebUploadUtils(object):
             fs = self.__reqObj.getRawValue(fileTag)
             if (self.__verbose):
                 self.__lfh.write("+WebUploadUtils.copyToSession() - upload file descriptor fs =     %r\n" % fs)
-            #formRequestFileName = str(fs.filename).strip().lower()
+            # formRequestFileName = str(fs.filename).strip().lower()
             formRequestFileName = str(fs.filename).strip()
 
             #
             if (formRequestFileName.find('\\') != -1):
-                uploadInputFilefName = ntpath.basename(formRequestFileName)
+                uploadInputFileName = os.ntpath.basename(formRequestFileName)
             else:
                 uploadInputFileName = os.path.basename(formRequestFileName)
 
@@ -148,7 +147,7 @@ class WebUploadUtils(object):
                 self.__lfh.write("+WebUploadUtils.copyToSession() Uploaded file %s\n" % str(sessionInputFileName))
             #
             return sessionInputFileName
-        except:
+        except:  # noqa: E722
             if (self.__verbose):
                 self.__lfh.write("+WebUploadUtils.copyToSession() File upload processing failed\n")
                 traceback.print_exc(file=self.__lfh)
@@ -161,7 +160,7 @@ class WebUploadUtils(object):
                 dstPath = os.path.join(self.__sessionPath, dstFileName)
                 shutil.copyfile(srcPath, dstPath)
             return True
-        except:
+        except:  # noqa: E722
             return False
 
     def getFileExtension(self, fileName, ignoreVersion=False):
@@ -190,7 +189,7 @@ class WebUploadUtils(object):
             else:
                 if len(fL) > 1:
                     fExt = fL[-1]
-        except:
+        except:  # noqa: E722
             pass
 
         return fExt
@@ -241,7 +240,7 @@ class WebUploadUtils(object):
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
             os.system(cmd)
             return True
-        except:
+        except:  # noqa: E722
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return False

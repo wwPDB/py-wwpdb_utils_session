@@ -12,13 +12,6 @@
 Provide a storage interface for miscellaneous key,value data.
 
 """
-__docformat__ = "restructuredtext en"
-__author__    = "John Westbrook"
-__email__     = "jwest@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
-
-
 import sys
 import os.path
 try:
@@ -26,10 +19,15 @@ try:
 except ImportError:
     import pickle
 
+__docformat__ = "restructuredtext en"
+__author__ = "John Westbrook"
+__email__ = "jwest@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
+
 
 class UtilDataStore(object):
     """  Provide a storage interface for miscellaneous key,value data.
-        
     """
 
     def __init__(self, reqObj, prefix=None, verbose=False, log=sys.stderr):
@@ -75,7 +73,7 @@ class UtilDataStore(object):
             fb = open(self.__filePath, 'wb')
             pickle.dump(self.__D, fb, self.__pickleProtocol)
             fb.close()
-        except:
+        except:  # noqa: E722
             pass
 
     def deserialize(self):
@@ -84,20 +82,20 @@ class UtilDataStore(object):
             self.__D = pickle.load(fb)
             fb.close()
             return True
-        except:
+        except:  # noqa: E722
             return False
 
     def get(self, key):
         try:
             return (self.__D[key])
-        except:
+        except:  # noqa: E722
             return ''
 
     def set(self, key, value):
         try:
             self.__D[key] = value
             return True
-        except:
+        except:  # noqa: E722
             return False
 
     def append(self, key, value):
@@ -106,7 +104,7 @@ class UtilDataStore(object):
                 self.__D[key] = []
             self.__D[key].append(value)
             return True
-        except:
+        except:  # noqa: E722
             return False
 
     def extend(self, key, valueList):
@@ -115,7 +113,7 @@ class UtilDataStore(object):
                 self.__D[key] = []
             self.__D[key].extend(valueList)
             return True
-        except:
+        except:  # noqa: E722
             return False
 
     def updateDict(self, key, subKey, value):
@@ -124,7 +122,7 @@ class UtilDataStore(object):
                 self.__D[key] = {}
             self.__D[key][subKey] = value
             return True
-        except:
+        except:  # noqa: E722
             return False
 
     def getDictionary(self):

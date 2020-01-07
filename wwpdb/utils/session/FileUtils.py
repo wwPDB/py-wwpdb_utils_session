@@ -6,7 +6,7 @@
 #  6-July-2014  jdw add download anchors
 #  5- Jan-2015  jdw revise to support access to remote validation server files within the
 #                   production context -
-# 29- Nov-2016  ep  Add dict-check-report-next to list 
+# 29- Nov-2016  ep  Add dict-check-report-next to list
 # 13- Feb-2016  ep  Add '3DEM Files' to default list for FileUtils.
 # 28-Sept-2017  zf  Modified renderFileList() & __renderContentTypeFileList()
 ##
@@ -25,7 +25,7 @@ import sys
 import os.path
 import os
 import glob
-import traceback
+
 from wwpdb.io.file.DataExchange import DataExchange
 from wwpdb.io.locator.PathInfo import PathInfo
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -69,7 +69,7 @@ class FileUtils(object):
         self.__cD = self.__cI.get('CONTENT_TYPE_DICTIONARY')
         self.__msL = self.__cI.get('CONTENT_MILESTONE_LIST')
         #
-        self.__rDList = ['Primary Data Files', 'Chemical Assignment Files', 'Sequence Assignment Files', 'Annotation Task Files', 'Check reports', 
+        self.__rDList = ['Primary Data Files', 'Chemical Assignment Files', 'Sequence Assignment Files', 'Annotation Task Files', 'Check reports',
                          'Message Files', '3DEM Files']
         self.__rD = {'Primary Data Files': ['model', 'structure-factors', 'nmr-restraints', 'nmr-chemical-shifts', 'nmr-peaks', 'em-volume', 'em-mask', 'img-emdb'],
 
@@ -82,7 +82,7 @@ class FileUtils(object):
                                                'map-fofc', 'secondary-structure-topology', 'map-header-data',
                                                'fsc'],
 
-                     'Check reports': ['validation-report-depositor', 'geometry-check-report', 'polymer-linkage-report', 
+                     'Check reports': ['validation-report-depositor', 'geometry-check-report', 'polymer-linkage-report',
                                        'dict-check-report', 'dict-check-report-r4', 'dict-check-report-next',
                                        'format-check-report', 'misc-check-report', 'special-position-report', 'merge-xyz-report', 'nmr-cs-check-report',
                                        'nmr-cs-xyz-check-report', 'validation-report', 'validation-report-full',
@@ -115,7 +115,8 @@ class FileUtils(object):
                     for ms in self.__msL:
                         mt = ct + '-' + ms
                         fList.append(mt)
-                nF, oL = self.__renderContentTypeFileList(self.__entryId, fileSource=fileSource, wfInstanceId=None, contentTypeList=fList, \
+                nF, oL = self.__renderContentTypeFileList(self.__entryId, fileSource=fileSource,
+                                                          wfInstanceId=None, contentTypeList=fList,
                                                           title=title, displayImageFlag=displayImageFlag)
                 if nF > 0:
                     htmlList.extend(oL)
@@ -139,7 +140,7 @@ class FileUtils(object):
             fPattern = os.path.join(iTopPath, '*')
             wfInstancePathList = filter(os.path.isdir, glob.glob(fPattern))
             for wfInstancePath in wfInstancePathList:
-                (pth, wfInstId) = os.path.split(wfInstancePath)
+                (_pth, wfInstId) = os.path.split(wfInstancePath)
                 title = "Files in " + wfInstId
                 nF, oL = self.__renderWfInstanceFileList(self.__entryId, wfInstancePath, title=title)
                 if nF > 0:
@@ -148,17 +149,20 @@ class FileUtils(object):
         #
         return nTot, htmlList
 
-    def __renderContentTypeFileList(self, entryId, fileSource='archive', wfInstanceId=None, contentTypeList=["model"], title=None, displayImageFlag=False):
+    def __renderContentTypeFileList(self, entryId, fileSource='archive', wfInstanceId=None, contentTypeList=None, title=None, displayImageFlag=False):
+        if contentTypeList is None:
+            contentTypeList = ["model"]
         if self.__verbose:
             self.__lfh.write("+FileUtils.renderContentTypeFileList() entryId %r fileSource %r wfInstanceId %r contentTypeList %r \n" %
                              (entryId, fileSource, wfInstanceId, contentTypeList))
-        de = DataExchange(reqObj=self.__reqObj, depDataSetId=entryId, wfInstanceId=wfInstanceId, fileSource=fileSource, siteId=self.__siteId, \
+        de = DataExchange(reqObj=self.__reqObj, depDataSetId=entryId, wfInstanceId=wfInstanceId,
+                          fileSource=fileSource, siteId=self.__siteId,
                           verbose=self.__verbose, log=self.__lfh)
         tupL = de.getContentTypeFileList(fileSource=fileSource, contentTypeList=contentTypeList)
         #
         rTupL = []
         for tup in tupL:
-            href,fN = self.__makeDownloadHref(tup[0])
+            href, fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
                 sz = '%d' % int(tup[2])
             else:
@@ -172,7 +176,7 @@ class FileUtils(object):
                 #
                 os.symlink(tup[0], imgFile)
                 imgHtml = '<img src="/sessions/' + self.__sessionId + '/' + fN + '" border="0" alt="Image" width="400" height="400">'
-                rTupL.append(( 'displayImage', imgHtml, '' ))
+                rTupL.append(('displayImage', imgHtml, ''))
             #
         #
         if title is None:
@@ -192,7 +196,7 @@ class FileUtils(object):
         #
         rTupL = []
         for tup in tupL:
-            href,fN = self.__makeDownloadHref(tup[0])
+            href, _fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
                 sz = '%d' % int(tup[2])
             else:
@@ -214,7 +218,7 @@ class FileUtils(object):
         #
         rTupL = []
         for tup in tupL:
-            href,fN = self.__makeDownloadHref(tup[0])
+            href, _fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
                 sz = '%d' % int(tup[2])
             else:
@@ -255,7 +259,7 @@ class FileUtils(object):
         return len(fileTupleList), oL
 
     def __makeDownloadHref(self, filePath):
-        dP, fN = os.path.split(filePath)
+        _dP, fN = os.path.split(filePath)
         tS = '/service/review_v2/download_file?sessionid=' + self.__sessionId + '&file_path=' + filePath
         href = "<a class='my-file-downloadable' href='" + tS + "'>" + fN + "</a>"
-        return href,fN
+        return href, fN

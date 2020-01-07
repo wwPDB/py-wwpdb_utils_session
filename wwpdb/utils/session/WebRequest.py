@@ -40,7 +40,7 @@ import gzip
 import mimetypes
 try:
     from json import loads, dumps
-except:
+except:  # noqa: E722
     from simplejson import loads, dumps
 
 from wwpdb.utils.session.SessionManager import SessionManager
@@ -88,7 +88,7 @@ class WebRequest(object):
                 sL.append("  - Key: %-35s  value(s): %r\n" % (k, vL))
             sL.append("   --------------------------------------------\n")
             return ''.join(sL)
-        except:
+        except:  # noqa: E722
             return ''
 
     def __repr__(self):
@@ -102,7 +102,7 @@ class WebRequest(object):
                 vL = self.__dict[k]
                 ofh.write("  - Key: %-35s  value(s): %r\n" % (k, vL))
             ofh.write("   --------------------------------------------\n")
-        except:
+        except:  # noqa: E722
             pass
 
     def dump(self, format='text'):
@@ -110,13 +110,13 @@ class WebRequest(object):
         try:
             if (format == 'html'):
                 oL.append('<pre>\n')
-            oL.append("\ +nWebRequest.dump() Request Dictionary Contents:\n")
+            oL.append("\n+nWebRequest.dump() Request Dictionary Contents:\n")
             for k, vL in self.__dict.items():
                 oL.append("  - Key: %-35s  value(s): %r\n" % (k, vL))
             oL.append("   --------------------------------------------\n")
             if (format == 'html'):
                 oL.append('</pre>\n')
-        except:
+        except:  # noqa: E722
             pass
 
         return oL
@@ -162,38 +162,38 @@ class WebRequest(object):
     def exists(self, myKey):
         try:
             return myKey in self.__dict
-        except:
+        except:  # noqa: E722
             return False
 
     #
     def _getRawValue(self, myKey):
         try:
             return self.__dict[myKey][0]
-        except:
+        except:  # noqa: E722
             return None
 
     def _getStringValue(self, myKey):
         try:
             return str(self.__dict[myKey][0]).strip()
-        except:
+        except:  # noqa: E722
             return ''
 
     def _getIntegerValue(self, myKey):
         try:
             return int(self.__dict[myKey][0])
-        except:
+        except:  # noqa: E722
             return None
 
     def _getDoubleValue(self, myKey):
         try:
-            return double(self.__dict[myKey][0])
-        except:
+            return float(self.__dict[myKey][0])
+        except:  # noqa: E722
             return None
 
     def _getStringList(self, myKey):
         try:
             return self.__dict[myKey]
-        except:
+        except:  # noqa: E722
             return []
 
 
@@ -325,7 +325,7 @@ class ResponseContent(object):
     def setHtmlList(self, htmlList=[]):
         self._cD['htmlcontent'] = '\n'.join(htmlList)
 
-    def appendHtmlList(self, htmList=[]):
+    def appendHtmlList(self, htmlList=[]):
         self._cD['htmlcontent'].extend('\n'.join(htmlList))
 
     def setHtmlText(self, htmlText=''):
@@ -352,8 +352,8 @@ class ResponseContent(object):
         try:
             if os.path.exists(filePath):
                 self._cD['textcontent'] = open(filePath).read()
-        except:
-            self.__lfh.write("+setTextFile() File read failed %s\n" % filePath)
+        except Exception as e:
+            self.__lfh.write("+setTextFile() File read failed %s %s\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
     def setTextFileO(self, filePath):
@@ -397,8 +397,8 @@ class ResponseContent(object):
 
                 if (self.__verbose):
                     self.__lfh.write("+ResponseContent.setBinaryFile() Serving %s as %s encoding %s att flag %r\n" % (filePath, contentType, encodingType, attachmentFlag))
-        except:
-            self.__lfh.write("ResponseContent.setBinaryFile() File read failed %s\n" % filePath)
+        except Exception as e:
+            self.__lfh.write("ResponseContent.setBinaryFile() File read failed %s error: %r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
     def wrapFileAsJsonp(self, filePath, callBack=None):
@@ -424,8 +424,8 @@ class ResponseContent(object):
                 #
                 if (self.__debug):
                     self.__lfh.write("+ResponseContent.wrapFileAsJsonp() Serving %s as %s\n" % (filePath, self._cD['datacontent']))
-        except:
-            self.__lfh.write("ResponseContent.wrapFileAsJsonp() File read failed %s\n" % filePath)
+        except Exception as e:
+            self.__lfh.write("ResponseContent.wrapFileAsJsonp() File read failed %s err=%r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
     def setStatus(self, statusMsg='', semaphore=''):
@@ -457,7 +457,7 @@ class ResponseContent(object):
                 continue
             elif isinstance(v, dict):
                 retL.append("  - key = %-35s " % k)
-                retL.append("  - dict : %s\n" % (v.items()))
+                retL.append("  - dict : %s\n" % list(v.items()))
             elif v is not None and len(str(v).strip()) > 0:
                 retL.append("  - key = %-35s " % k)
                 retL.append(" value(1-%d): %s\n" % (maxLength, str(v)[:maxLength]))
@@ -475,12 +475,12 @@ class ResponseContent(object):
         """
         rD = {}
         if (self.__returnFormat == 'html'):
-            if (self._cD['errorflag'] == False):
+            if self._cD['errorflag'] is False:
                 rD = self.__initHtmlResponse(self._cD['htmlcontent'])
             else:
                 rD = self.__initHtmlResponse(self._cD['statustext'])
         elif (self.__returnFormat == 'text'):
-            if (self._cD['errorflag'] == False):
+            if self._cD['errorflag'] is False:
                 rD = self.__initTextResponse(self._cD['textcontent'])
             else:
                 rD = self.__initHtmlResponse(self._cD['statustext'])
@@ -515,7 +515,7 @@ class ResponseContent(object):
             rspDict['ENCODING'] = myD['encodingtype']
             if myD['disposition'] is not None:
                 rspDict['DISPOSITION'] = "%s; filename=%s" % (myD['disposition'], myD['datafileName'])
-        except:
+        except:  # noqa: E722
             pass
         return rspDict
 
@@ -534,7 +534,7 @@ class ResponseContent(object):
     def __initJsonResponseInTextArea(self, myD={}):
         rspDict = {}
         rspDict['CONTENT_TYPE'] = 'text/html'
-        #rspDict['CONTENT_TYPE']  = 'text/plain'
+        # rspDict['CONTENT_TYPE']  = 'text/plain'
         rspDict['RETURN_STRING'] = '<textarea>' + dumps(myD) + '</textarea>'
         return rspDict
 
@@ -571,17 +571,17 @@ class ResponseContent(object):
                         tfh = open(tpth, 'r')
                         sL.append(tfh.read())
                         tfh.close()
-                    except:
+                    except Exception as e:
                         if (self.__verbose):
-                            self.__lfh.write("+WebRequest.__processTemplate() failed to include %s fields=%r\n" % (tpth, fields))
+                            self.__lfh.write("+WebRequest.__processTemplate() failed to include %s fields=%r err=%r\n" % (tpth, fields, str(e)))
                 else:
                     sL.append(line)
             ifh.close()
             sIn = ''.join(sL)
             return (sIn % parameterDict)
-        except:
+        except Exception as e:
             if (self.__verbose):
-                self.__lfh.write("+WebRequest.__processTemplate() failed for %s\n" % templateFilePath)
+                self.__lfh.write("+WebRequest.__processTemplate() failed for %s %r\n" % (templateFilePath, str(e)))
                 traceback.print_exc(file=self.__lfh)
 
         return ''

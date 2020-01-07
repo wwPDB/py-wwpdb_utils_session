@@ -14,7 +14,8 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 import unittest
 
-from wwpdb.utils.session.SessionManager    import SessionManager
+from wwpdb.utils.session.SessionManager import SessionManager
+
 
 class SessionTests(unittest.TestCase):
     def setUp(self):
@@ -28,7 +29,7 @@ class SessionTests(unittest.TestCase):
 
         sm.setId('12345')
         self.assertEqual(sm.getId(), '12345')
-        
+
         self.assertNotEqual(sm.assignId(), None, "Failed to return id")
         self.assertNotEqual(sm.getId(), '12345', "Failed to generate new id")
 
