@@ -334,7 +334,10 @@ class ResponseContent(object):
     def appendHtmlList(self, htmlList=None):
         if htmlList is None:
             htmlList = []
-        self._cD["htmlcontent"].extend("\n".join(htmlList))
+        if len(self._cD["htmlcontent"]) > 0:
+            self._cD["htmlcontent"] = "%s\n%s" % (self._cD["htmlcontent"], "\n".join(htmlList))
+        else:
+            self._cD["htmlcontent"] = "\n".join(htmlList)
 
     def setHtmlText(self, htmlText=""):
         self._cD["htmlcontent"] = htmlText
@@ -361,13 +364,15 @@ class ResponseContent(object):
     def setTextFile(self, filePath):
         try:
             if os.path.exists(filePath):
-                self._cD["textcontent"] = open(filePath).read()
+                with open(filePath, "r") as fin:
+                    self._cD["textcontent"] = fin.read()
         except Exception as e:
             self.__lfh.write("+setTextFile() File read failed %s %s\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
     def setTextFileO(self, filePath):
-        self._cD["textcontent"] = open(filePath).read()
+        with open(filePath, "r") as fin:
+            self._cD["textcontent"] = fin.read()
 
     def getMimetypeAndEncoding(self, filename):
         mtype, encoding = mimetypes.guess_type(filename)
@@ -386,11 +391,13 @@ class ResponseContent(object):
             if os.path.exists(filePath):
                 _dir, fn = os.path.split(filePath)
                 if not serveCompressed and fn.endswith(".gz"):
-                    self._cD["datacontent"] = gzip.open(filePath, "rb").read()
+                    with gzip.open(filePath, "rb") as fin:
+                        self._cD["datacontent"] = fin.read()
                     self._cD["datafileName"] = fn[:-3]
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath[:-3])
                 else:
-                    self._cD["datacontent"] = open(filePath, "rb").read()
+                    with open(filePath, "rb") as fin:
+                        self._cD["datacontent"] = fin.read()
                     self._cD["datafileName"] = fn
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath)
                 #
@@ -418,7 +425,8 @@ class ResponseContent(object):
                 (_rn, ext) = os.path.splitext(fn)
                 #
                 dd = {}
-                dd["data"] = open(filePath, "rb").read()
+                with open(filePath, "r") as fin:
+                    dd["data"] = fin.read()
                 if ext.lower() != ".json":
                     self._cD["datacontent"] = callBack + "(" + dumps(dd) + ");"
                 else:
@@ -432,7 +440,7 @@ class ResponseContent(object):
                 self._cD["encodingtype"] = encodingType
                 self._cD["disposition"] = "inline"
                 #
-                if self.__debug:
+                if self.__debug:  # pragma: no cover
                     self.__lfh.write("+ResponseContent.wrapFileAsJsonp() Serving %s as %s\n" % (filePath, self._cD["datacontent"]))
         except Exception as e:
             self.__lfh.write("ResponseContent.wrapFileAsJsonp() File read failed %s err=%r\n" % (filePath, str(e)))
@@ -607,5 +615,5 @@ class ResponseContent(object):
         return ""
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     rC = ResponseContent()
