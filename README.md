@@ -1,2 +1,2 @@
-# py-wwpdb_utils_webservice
+# py-wwpdb_utils_session
 A collection of utilities to aid in web services
