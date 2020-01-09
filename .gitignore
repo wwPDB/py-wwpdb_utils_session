@@ -102,3 +102,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Output from testing
+wwpdb/utils/tests-session/test-output
+
+# Emacs autosave
+*~
+
+.idea
