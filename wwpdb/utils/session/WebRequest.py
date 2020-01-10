@@ -282,8 +282,8 @@ class ResponseContent(object):
         #
         self._cD = {}
         self.__debug = False
-        self.__setup()
         self.__returnFormat = ""
+        self.__setup()
 
     def __setup(self):
         """ Default response content is set here.
@@ -304,11 +304,13 @@ class ResponseContent(object):
         # legacy setting --
         self._cD["errortext"] = ""
         if self.__reqObj is not None:
+            print("YYYY", self.__reqObj.getReturnFormat())
             self._cD["sessionid"] = self.__reqObj.getSessionId()
             self._cD["semaphore"] = self.__reqObj.getSemaphore()
             # Default comes from the input request object
             self.__returnFormat = self.__reqObj.getReturnFormat()
         else:
+            print("YYYY bad")
             self._cD["sessionid"] = ""
             self._cD["semaphore"] = ""
         #
@@ -482,6 +484,7 @@ class ResponseContent(object):
         return retL
 
     def setReturnFormat(self, format):  # pylint: disable=redefined-builtin
+        print("YYYY refutn format being set to", format)
         if format in ["html", "text", "json", "jsonText", "jsonData", "location", "binary", "jsonp"]:
             self.__returnFormat = format
             return True
@@ -492,7 +495,9 @@ class ResponseContent(object):
         """Repackage the response for Apache according to the input return_format='html|json|text|...'
         """
         rD = {}
+        print("XXXX in get", self.__returnFormat)
         if self.__returnFormat == "html":
+            print("XXXX in get2 - error", self._cD["errorflag"])
             if self._cD["errorflag"] is False:
                 rD = self.__initHtmlResponse(self._cD["htmlcontent"])
             else:
