@@ -82,10 +82,13 @@ class SessionTests(unittest.TestCase):
         sdir = os.path.join(self.__sessiontop, "sessions")
         if not os.path.exists(sdir):  # pragma: no cover
             os.makedirs(sdir)
-        with open(os.path.abspath(__file__), "r") as fin:
+
+        fname = os.path.join(HERE, "WebAppWorkerBaseTests.py")
+        with open(fname, "r") as fin:
             content = fin.read()
-        fs = _create_fs("text", content, filename=os.path.abspath(__file__))
+        fs = _create_fs("text", content, filename=fname)
         self.__paramDict = {"TopSessionPath": [self.__sessiontop], "request_path": ["service/testpath"], "file": [fs]}
+        self.__reffile = fname
 
     def testWebappWorkerSemaphore(self):
         """Tests WebAppWorker semaphore"""
@@ -116,7 +119,7 @@ class SessionTests(unittest.TestCase):
         # Ensure present
         dst = os.path.join(sesspath, "WebAppWorkerBaseTests.py")
         self.assertTrue(os.path.exists(dst))
-        self.assertTrue(filecmp.cmp(dst, os.path.abspath(__file__)))
+        self.assertTrue(filecmp.cmp(dst, self.__reffile))
 
     def testWebappWorkerParameter(self):
         """Tests WebAppWorker parameter setting"""
