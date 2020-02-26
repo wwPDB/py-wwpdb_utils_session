@@ -71,7 +71,7 @@ class FileUtils(object):
         #
         self.__rDList = ["Primary Data Files", "Chemical Assignment Files", "Sequence Assignment Files", "Annotation Task Files", "Check reports", "Message Files", "3DEM Files"]
         self.__rD = {
-            "Primary Data Files": ["model", "structure-factors", "nmr-restraints", "nmr-chemical-shifts", "nmr-peaks", "em-volume", "em-mask", "img-emdb"],
+            "Primary Data Files": ["model", "structure-factors", "nmr-restraints", "nmr-chemical-shifts", "nmr-data-str", "nmr-data-nef", "nmr-peaks", "em-volume", "em-mask", "img-emdb"],
             "Chemical Assignment Files": [
                 "chem-comp-link",
                 "chem-comp-assign",
