@@ -114,7 +114,7 @@ class WebUploadUtils(object):
 
             #
             if formRequestFileName.find("\\") != -1:
-                uploadInputFileName = os.ntpath.basename(formRequestFileName)
+                uploadInputFileName = ntpath.basename(formRequestFileName)
             else:
                 uploadInputFileName = os.path.basename(formRequestFileName)
 
