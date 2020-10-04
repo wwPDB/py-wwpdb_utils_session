@@ -28,8 +28,7 @@ __version__ = "V0.07"
 
 
 class UtilDataStore(object):
-    """  Provide a storage interface for miscellaneous key,value data.
-    """
+    """Provide a storage interface for miscellaneous key,value data."""
 
     def __init__(self, reqObj, prefix=None, verbose=False, log=sys.stderr):
         self.__verbose = verbose

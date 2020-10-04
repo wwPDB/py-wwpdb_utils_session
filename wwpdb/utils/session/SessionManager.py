@@ -30,17 +30,17 @@ __version__ = "V0.07"
 
 class SessionManager(object):
     """
-        Utilities for session directory maintenance.
+    Utilities for session directory maintenance.
 
     """
 
     def __init__(self, topPath=".", verbose=False):
         """
-             Organization of session directory is --
-             <topPath>/<sha-hash>/<session_files>
+        Organization of session directory is --
+        <topPath>/<sha-hash>/<session_files>
 
-             Parameters:
-             :topPath: is the path to the directory containing the hash-id sub-directory.
+        Parameters:
+        :topPath: is the path to the directory containing the hash-id sub-directory.
 
 
         """
@@ -91,8 +91,8 @@ class SessionManager(object):
         return pth
 
     def makeSessionPath(self):
-        """ If the path to the current session directory does not exist
-            create it and return the session path.
+        """If the path to the current session directory does not exist
+        create it and return the session path.
         """
         try:
             pth = os.path.join(self.__topSessionPath, "sessions", self.__uid)

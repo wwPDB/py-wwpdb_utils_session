@@ -49,9 +49,9 @@ from datetime import datetime
 
 
 def json_serializer_helper(obj):
-    """ Helper function to handle = objects not serializable by default json code
+    """Helper function to handle = objects not serializable by default json code
 
-        Current -  handling datetime objects and falling back to str()
+    Current -  handling datetime objects and falling back to str()
     """
 
     if isinstance(obj, datetime):
@@ -69,8 +69,7 @@ def json_serializer_helper(obj):
 
 class WebRequest(object):
 
-    """ Base container and accessors for input and output parameters and control information.
-    """
+    """Base container and accessors for input and output parameters and control information."""
 
     def __init__(self, paramDict=None, verbose=False):
         if paramDict is None:
@@ -286,8 +285,7 @@ class ResponseContent(object):
         self.__setup()
 
     def __setup(self):
-        """ Default response content is set here.
-        """
+        """Default response content is set here."""
         self._cD["htmllinkcontent"] = ""
         self._cD["htmlcontent"] = ""
         self._cD["textcontent"] = ""
@@ -489,8 +487,7 @@ class ResponseContent(object):
             return False
 
     def get(self):
-        """Repackage the response for Apache according to the input return_format='html|json|text|...'
-        """
+        """Repackage the response for Apache according to the input return_format='html|json|text|...'"""
         rD = {}
         if self.__returnFormat == "html":
             if self._cD["errorflag"] is False:
@@ -577,14 +574,14 @@ class ResponseContent(object):
         return rspDict
 
     def __processTemplate(self, templateFilePath="./alignment_template.html", webIncludePath=".", parameterDict=None, insertContext=False):
-        """ Read the input HTML template data file and perform the key/value substitutions in the
-            input parameter dictionary.
+        """Read the input HTML template data file and perform the key/value substitutions in the
+        input parameter dictionary.
 
-            if insertContext is set then paramDict is injected as a json object if <!--insert application_context=""-->
+        if insertContext is set then paramDict is injected as a json object if <!--insert application_context=""-->
 
-            Template HTML file path -  (e.g. /../../htdocs/<appName>/template.html)
-            webTopPath = file system path for web includes files  (eg. /../../htdocs) which will
-                         be prepended to embedded include path in the HTML template document
+        Template HTML file path -  (e.g. /../../htdocs/<appName>/template.html)
+        webTopPath = file system path for web includes files  (eg. /../../htdocs) which will
+                     be prepended to embedded include path in the HTML template document
         """
         if parameterDict is None:
             parameterDict = {}

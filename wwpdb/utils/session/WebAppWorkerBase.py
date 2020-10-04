@@ -40,9 +40,9 @@ from wwpdb.utils.session.WebRequest import ResponseContent
 class WebAppWorkerBase(object):
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
-         Base class supporting web application worker methods.
+        Base class supporting web application worker methods.
 
-         Performs URL -> application mapping for this module.
+        Performs URL -> application mapping for this module.
 
         """
 
@@ -74,9 +74,9 @@ class WebAppWorkerBase(object):
     def doOp(self):
         """Map operation to path and invoke operation.  Exceptions are caught within this method.
 
-            :returns:
+        :returns:
 
-            Operation output is packaged in a ResponseContent() object.
+        Operation output is packaged in a ResponseContent() object.
 
         """
         #
@@ -110,8 +110,8 @@ class WebAppWorkerBase(object):
 
     #
     def _saveSessionParameter(self, param=None, value=None, pvD=None, prefix=None):
-        """ Store the input (param,value) pair and/or the contents of parameter value
-            dictionary (pvD) in the session parameter store.
+        """Store the input (param,value) pair and/or the contents of parameter value
+        dictionary (pvD) in the session parameter store.
         """
         try:
             # if self._uds is None:
@@ -130,8 +130,7 @@ class WebAppWorkerBase(object):
         return False
 
     def _getSessionParameter(self, param=None, prefix=None):
-        """ Recover session data for the input parameter or return an empty string.
-        """
+        """Recover session data for the input parameter or return an empty string."""
         try:
             self._uds = UtilDataStore(reqObj=self._reqObj, prefix=prefix, verbose=self._verbose, log=self._lfh)
             return self._uds.get(param)
@@ -194,8 +193,7 @@ class WebAppWorkerBase(object):
         return False
 
     def _getSession(self, forceNew=False, useContext=False, overWrite=True):
-        """ Join existing session or create new session as required.
-        """
+        """Join existing session or create new session as required."""
         #
         self._sObj = self._reqObj.newSessionObj(forceNew=forceNew)
 
@@ -220,8 +218,7 @@ class WebAppWorkerBase(object):
             self._reqObj.setDictionary(dd, overWrite=overWrite)
 
     def _isFileUpload(self, fileTag="file"):
-        """ Generic check for the existence of request paramenter of type "file".
-        """
+        """Generic check for the existence of request paramenter of type "file"."""
         fs = self._reqObj.getRawValue(fileTag)
         if sys.version_info[0] < 3:
             if (fs is None) or (isinstance(fs, types.StringType)):  # pylint: disable=no-member
@@ -233,8 +230,7 @@ class WebAppWorkerBase(object):
         return True
 
     def _uploadFile(self, fileTag="file"):
-        """  Copying uploaded file to the session directory.  Return file name or None.
-        """
+        """Copying uploaded file to the session directory.  Return file name or None."""
         try:
             fs = self._reqObj.getRawValue(fileTag)
             fNameInput = str(fs.filename)

@@ -48,7 +48,7 @@ __version__ = "V0.09"
 
 class WebDownloadUtils(object):
     """
-     This class encapsulates handling download requests for workflow data files -
+    This class encapsulates handling download requests for workflow data files -
 
     """
 
@@ -71,8 +71,8 @@ class WebDownloadUtils(object):
             self.__lfh.write("+WebDownloadUtils.__setup() - session path %s\n" % (self.__sessionPath))
 
     def makeDownloadResponse(self):
-        """  Return a response object correponding to a download action for data file described by the
-             parameter content in the request object.
+        """Return a response object correponding to a download action for data file described by the
+        parameter content in the request object.
         """
         if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.makeResponse() starting with session path %s\n" % self.__sessionPath)
@@ -83,9 +83,7 @@ class WebDownloadUtils(object):
         return self.__makeResponseContentObject(filePath=filePath)
 
     def __getDownloadFileInfo(self):
-        """ Extract target file details and return file path or None.
-
-        """
+        """Extract target file details and return file path or None."""
         retPath = None
         #
         dataSetId = self.__reqObj.getValue("data_set_id")
@@ -113,9 +111,7 @@ class WebDownloadUtils(object):
         return retPath
 
     def __makeResponseContentObject(self, filePath, attachmentFlag=True, compressFlag=False):
-        """  Create a response content object for the input file
-
-        """
+        """Create a response content object for the input file"""
         if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.__makeResponseContentObject() starting with file path %s\n" % filePath)
         #

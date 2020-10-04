@@ -160,8 +160,7 @@ class FileUtils(object):
         }
 
     def renderFileList(self, fileSource="archive", rDList=None, titlePrefix="", titleSuffix="", displayImageFlag=False):
-        """
-        """
+        """"""
         if rDList is None:
             rDList = self.__rDList
 
