@@ -21,7 +21,7 @@ jobs:
       vmImage: 'ubuntu-latest'
   dependsOn:
   - ${{ format('build_test_{0}_{1}', parameters.tox, parameters.os) }}
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Push_Pypi'], 'True'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or (eq(variables['Build.SourceBranchName'], 'master'), eq(variables['Push_Pypi'], 'True')))
   #
   steps:
     - task: UsePythonVersion@0
