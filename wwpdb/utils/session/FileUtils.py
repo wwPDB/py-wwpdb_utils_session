@@ -31,46 +31,12 @@ from wwpdb.io.locator.PathInfo import PathInfo
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
 
-class FileUtils(object):
-    """
-    Manage the presentation of project files for download.
+class FileUtilsBase(object):
+    """Base class that defines the content types to download"""
 
-    """
-
-    def __init__(self, entryId, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose = verbose
-        self.__lfh = log
-        self.__reqObj = reqObj
-        self.__debug = True
-        # Reassign siteId for the following special case --
-        self.__entryId = entryId
-        siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
-        # This is for viewing the entries from the standalone validation server from annotation --
-        if siteId in ["WWPDB_DEPLOY_PRODUCTION_RU", "WWPDB_DEPLOY_VALSRV_RU", "WWPDB_DEPLOY_TEST", "WWPDB_DEPLOY_INTERNAL_RU"] and entryId.startswith("D_90"):
-            siteId = "WWPDB_DEPLOY_VALSRV_RU"
-        #
-        self.__setup(siteId=siteId)
-
-    def __setup(self, siteId=None):
-        if siteId is not None:
-            self.__siteId = siteId
-        else:
-            self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
-        #
-        self.__lfh.write("+FileUtils.__setup() starting with entryId %r adjusted WWPDB_SITE_ID %r\n" % (self.__entryId, self.__siteId))
-        #
-        self.__sObj = self.__reqObj.getSessionObj()
-        self.__sessionId = self.__sObj.getId()
-        self.__sessionPath = self.__sObj.getPath()
-        self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
-        self.__cleanup = False
-        self.__currentHeaderFilePath = None
-        self.__cI = ConfigInfo(self.__siteId)
-        self.__cD = self.__cI.get("CONTENT_TYPE_DICTIONARY")
-        self.__msL = self.__cI.get("CONTENT_MILESTONE_LIST")
-        #
-        self.__rDList = ["Primary Data Files", "Chemical Assignment Files", "Sequence Assignment Files", "Annotation Task Files", "Check reports", "Message Files", "3DEM Files"]
-        self.__rD = {
+    def __init__(self):
+        self._rDList = ["Primary Data Files", "Chemical Assignment Files", "Sequence Assignment Files", "Annotation Task Files", "Check reports", "Message Files", "3DEM Files"]
+        self._rD = {
             "Primary Data Files": [
                 "model",
                 "structure-factors",
@@ -80,7 +46,7 @@ class FileUtils(object):
                 "nmr-data-nef",
                 "nmr-peaks",
                 "em-volume",
-                "em-mask",
+                "em-mask-volume",
                 "img-emdb",
             ],
             "Chemical Assignment Files": [
@@ -159,18 +125,61 @@ class FileUtils(object):
             ],
         }
 
+
+class FileUtils(FileUtilsBase):
+    """
+    Manage the presentation of project files for download.
+
+    """
+
+    def __init__(self, entryId, reqObj=None, verbose=False, log=sys.stderr):
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__debug = True
+        # Reassign siteId for the following special case --
+        self.__entryId = entryId
+        siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
+        # This is for viewing the entries from the standalone validation server from annotation --
+        if siteId in ["WWPDB_DEPLOY_PRODUCTION_RU", "WWPDB_DEPLOY_VALSRV_RU", "WWPDB_DEPLOY_TEST", "WWPDB_DEPLOY_INTERNAL_RU"] and entryId.startswith("D_90"):
+            siteId = "WWPDB_DEPLOY_VALSRV_RU"
+        #
+        # Get inventory of file types
+        super(FileUtils, self).__init__()
+        #
+        self.__setup(siteId=siteId)
+
+    def __setup(self, siteId=None):
+        if siteId is not None:
+            self.__siteId = siteId
+        else:
+            self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
+        #
+        self.__lfh.write("+FileUtils.__setup() starting with entryId %r adjusted WWPDB_SITE_ID %r\n" % (self.__entryId, self.__siteId))
+        #
+        self.__sObj = self.__reqObj.getSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
+        self.__cleanup = False
+        self.__currentHeaderFilePath = None
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__cD = self.__cI.get("CONTENT_TYPE_DICTIONARY")
+        self.__msL = self.__cI.get("CONTENT_MILESTONE_LIST")
+        #
+
     def renderFileList(self, fileSource="archive", rDList=None, titlePrefix="", titleSuffix="", displayImageFlag=False):
         """"""
         if rDList is None:
-            rDList = self.__rDList
+            rDList = self._rDList
 
         htmlList = []
         nTot = 0
         if fileSource in ["archive", "deposit", "wf-archive"]:
             for ky in rDList:
-                if ky not in self.__rD:
+                if ky not in self._rD:
                     continue
-                ctList = self.__rD[ky]
+                ctList = self._rD[ky]
                 title = titlePrefix + ky + titleSuffix
                 fList = []
                 fList.extend(ctList)
