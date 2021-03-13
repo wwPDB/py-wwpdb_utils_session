@@ -15,6 +15,7 @@ __version__ = "V0.01"
 import unittest
 import os
 import platform
+from io import BytesIO
 
 from wwpdb.utils.session.SessionManager import SessionManager
 from wwpdb.utils.session.UtilDataStore import UtilDataStore
@@ -23,6 +24,7 @@ from wwpdb.utils.session.WebDownloadUtils import WebDownloadUtils
 from wwpdb.utils.session.WebRequest import WebRequest, InputRequest
 from wwpdb.utils.session.WebUploadUtils import WebUploadUtils
 from wwpdb.utils.session.FileUtils import FileUtils
+from wwpdb.utils.session.WwPdbWebOb import WwPdbRequest, WwPdbResponse
 
 
 class ImportTests(unittest.TestCase):
@@ -48,6 +50,16 @@ class ImportTests(unittest.TestCase):
         _vc = WebUploadUtils(reqobj, verbose=True)  # noqa: F841
         _vc = SessionManager()  # noqa: F841
         _vc = FileUtils("xxxx", reqobj)  # noqa: F841
+        _vc = WwPdbResponse()  # noqa: F841
+        body = b"input"
+        INPUT = BytesIO(body)
+        environ = {
+            "wsgi.input": INPUT,
+            "CONTENT_LENGTH": len(body),
+            "REQUEST_METHOD": "POST",
+        }
+        with WwPdbRequest(environ) as _vc:  # noqa: F841
+            pass
 
 
 if __name__ == "__main__":  # pragma: no cover

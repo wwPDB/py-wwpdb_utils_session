@@ -41,7 +41,7 @@ setup(
     ],
     entry_points={"console_scripts": []},
     #
-    install_requires=["wwpdb.utils.config", "wwpdb.io"],
+    install_requires=["wwpdb.utils.config", "wwpdb.io", "WebOB"],
     packages=find_packages(exclude=["wwpdb.utils.tests-session"]),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
