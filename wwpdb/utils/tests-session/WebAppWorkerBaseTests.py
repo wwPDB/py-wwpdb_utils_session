@@ -16,7 +16,6 @@ __version__ = "V0.01"
 import os
 import unittest
 import platform
-import sys
 import cgi
 from io import BytesIO
 import filecmp
@@ -36,10 +35,6 @@ def _create_fs(mimetype, content, filename="uploaded.txt", name="file"):
 
 class MyWebAppWorker(WebAppWorkerBase):
     """A class to provide access to methods for testing"""
-
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        super(MyWebAppWorker, self).__init__(reqObj, verbose, log)
-        self.__verbose = verbose
 
     def setSemaphore(self):
         return self._setSemaphore()

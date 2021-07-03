@@ -25,10 +25,6 @@ from wwpdb.utils.session.WebRequest import WebRequest, InputRequest, ResponseCon
 class MyWebRequest(WebRequest):
     """A class to provide access to methods for testing"""
 
-    def __init__(self, paramDict=None, verbose=False):
-        super(MyWebRequest, self).__init__(paramDict, verbose)
-        self.__verbose = verbose
-
     def getIntegerValue(self, myKey):
         return self._getIntegerValue(myKey)
 

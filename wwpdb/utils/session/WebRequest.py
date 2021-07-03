@@ -71,16 +71,14 @@ class WebRequest(object):
 
     """Base container and accessors for input and output parameters and control information."""
 
-    def __init__(self, paramDict=None, verbose=False):
+    def __init__(self, paramDict=None, verbose=False):  # pylint: disable=unused-argument
         if paramDict is None:
             paramDict = {}
-        self.__verbose = verbose
         #
         #  Input and storage model is dictionary of lists (e.g. dict[myKey] = [,,,])
         #  Single values are stored in the leading element of the list (e.g. dict[myKey][0])
         #
         self.__dict = paramDict
-        self.__debug = False
 
     def __str__(self):
         try:
@@ -201,10 +199,8 @@ class WebRequest(object):
 
 
 class InputRequest(WebRequest):
-    def __init__(self, paramDict, verbose=False, log=sys.stderr):
+    def __init__(self, paramDict, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         super(InputRequest, self).__init__(paramDict, verbose)
-        self.__verbose = verbose
-        self.__lfh = log
         self.__returnFormatDefault = ""
 
     def setDefaultReturnFormat(self, return_format="html"):

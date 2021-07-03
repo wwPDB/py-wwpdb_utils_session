@@ -58,8 +58,6 @@ class WebDownloadUtils(object):
         self.__verbose = verbose
         self.__lfh = log
         #
-        self.__debug = False
-        #
         self.__sessionObj = self.__reqObj.getSessionObj()
         self.__sessionPath = self.__sessionObj.getPath()
         self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
