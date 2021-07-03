@@ -66,9 +66,12 @@ class SessionManager(object):
         self.__uid = hashlib.sha1(tmp).hexdigest()
         return self.__uid
 
+    def getSessionsPath(self):
+        return os.path.join(self.getTopPath(), "sessions")
+
     def getPath(self):
         try:
-            pth = os.path.join(self.__topSessionPath, "sessions", self.__uid)
+            pth = os.path.join(self.getSessionsPath(), self.__uid)
             if self.__verbose:
                 sys.stderr.write("+SessionManager.getPath() path %s\n" % pth)
             if os.access(pth, os.F_OK):
@@ -95,7 +98,7 @@ class SessionManager(object):
         create it and return the session path.
         """
         try:
-            pth = os.path.join(self.__topSessionPath, "sessions", self.__uid)
+            pth = os.path.join(self.getSessionsPath(), self.__uid)
             if not os.access(pth, os.F_OK):
                 os.makedirs(pth)
             return pth
@@ -104,7 +107,7 @@ class SessionManager(object):
 
     def remakeSessionPath(self):
         try:
-            pth = os.path.join(self.__topSessionPath, "sessions", self.__uid)
+            pth = os.path.join(self.getSessionsPath(), self.__uid)
             if os.access(pth, os.F_OK):
                 shutil.rmtree(pth, True)
             os.makedirs(pth)

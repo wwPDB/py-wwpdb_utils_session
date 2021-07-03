@@ -227,7 +227,7 @@ class InputRequest(WebRequest):
         return self._getStringValue("sessionid")
 
     def getSessionPath(self):
-        return os.path.join(self._getStringValue("TopSessionPath"), "sessions")
+        return SessionManager(topPath=self._getStringValue("TopSessionPath")).getSessionsPath()
 
     def getTopSessionPath(self):
         return self._getStringValue("TopSessionPath")
