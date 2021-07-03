@@ -136,7 +136,6 @@ class FileUtils(FileUtilsBase):
         self.__verbose = verbose
         self.__lfh = log
         self.__reqObj = reqObj
-        self.__debug = True
         # Reassign siteId for the following special case --
         self.__entryId = entryId
         siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
@@ -161,10 +160,7 @@ class FileUtils(FileUtilsBase):
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
-        self.__cleanup = False
-        self.__currentHeaderFilePath = None
         self.__cI = ConfigInfo(self.__siteId)
-        self.__cD = self.__cI.get("CONTENT_TYPE_DICTIONARY")
         self.__msL = self.__cI.get("CONTENT_MILESTONE_LIST")
         #
 
