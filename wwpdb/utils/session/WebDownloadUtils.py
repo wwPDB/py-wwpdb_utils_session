@@ -34,9 +34,11 @@ Utilities to manage  web application download requests for archive and workflow 
 
 """
 
-import sys
 import os
+import sys
+
 from wwpdb.io.locator.PathInfo import PathInfo
+
 from wwpdb.utils.session.WebRequest import ResponseContent
 
 __docformat__ = "restructuredtext en"
@@ -62,7 +64,8 @@ class WebDownloadUtils(object):
         self.__sessionPath = self.__sessionObj.getPath()
         self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
 
-        self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
+        self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose,
+                             log=self.__lfh)
         #
         if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.__setup() - session id   %s\n" % (self.__sessionObj.getId()))
@@ -104,7 +107,8 @@ class WebDownloadUtils(object):
         #
 
         retPath = self.__pI.getFilePath(
-            dataSetId, wfInstanceId=wfInstanceId, contentType=contentType, formatType=formatType, fileSource=fileSource, versionId=versionId, partNumber=partNumber
+            dataSetId, wfInstanceId=wfInstanceId, contentType=contentType, formatType=formatType, fileSource=fileSource,
+            versionId=versionId, partNumber=partNumber
         )
         return retPath
 
