@@ -408,7 +408,7 @@ class ResponseContent(object):
 
                 if self.__verbose:
                     self.__lfh.write("+ResponseContent.setBinaryFile() Serving %s as %s encoding %s att flag %r\n" % (
-                    filePath, contentType, encodingType, attachmentFlag))
+                        filePath, contentType, encodingType, attachmentFlag))
         except Exception as e:
             self.__lfh.write("ResponseContent.setBinaryFile() File read failed %s error: %r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
@@ -600,7 +600,7 @@ class ResponseContent(object):
                         if self.__verbose:
                             self.__lfh.write(
                                 "+WebRequest.__processTemplate() failed to include %s fields=%r err=%r\n" % (
-                                tpth, fields, str(e)))
+                                    tpth, fields, str(e)))
                 else:
                     sL.append(line)
             ifh.close()
