@@ -15,11 +15,11 @@ Provides containment and access for session information.  Methods
 are provided to create temporary directories to preserve session files.
 
 """
-import sys
 import hashlib
-import time
 import os.path
 import shutil
+import sys
+import time
 
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
@@ -49,7 +49,8 @@ class SessionManager(object):
         self.__uid = None
 
     def __str__(self):
-        return "\n+SessionManager() Session top path: %s\nUnique identifier: %s\nSession path: %s\n" % (self.__topSessionPath, self.__uid, self.getPath())
+        return "\n+SessionManager() Session top path: %s\nUnique identifier: %s\nSession path: %s\n" % (
+            self.__topSessionPath, self.__uid, self.getPath())
 
     def __repr__(self):
         return self.__str__()
