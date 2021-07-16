@@ -32,12 +32,11 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-
-import sys
-import os
-import traceback
 import gzip
 import mimetypes
+import os
+import sys
+import traceback
 
 try:
     from json import loads, dumps
@@ -68,7 +67,6 @@ def json_serializer_helper(obj):
 
 
 class WebRequest(object):
-
     """Base container and accessors for input and output parameters and control information."""
 
     def __init__(self, paramDict=None, verbose=False):  # pylint: disable=unused-argument
@@ -338,7 +336,9 @@ class ResponseContent(object):
 
     def setHtmlTextFromTemplate(self, templateFilePath, webIncludePath, parameterDict=None, insertContext=False):
         pD = parameterDict if parameterDict is not None else {}
-        self._cD["htmlcontent"] = self.__processTemplate(templateFilePath=templateFilePath, webIncludePath=webIncludePath, parameterDict=pD, insertContext=insertContext)
+        self._cD["htmlcontent"] = self.__processTemplate(templateFilePath=templateFilePath,
+                                                         webIncludePath=webIncludePath, parameterDict=pD,
+                                                         insertContext=insertContext)
 
     def setHtmlLinkText(self, htmlText=""):
         self._cD["htmllinkcontent"] = htmlText
@@ -407,7 +407,8 @@ class ResponseContent(object):
                         self._cD["datafileName"] = fn[:-3]
 
                 if self.__verbose:
-                    self.__lfh.write("+ResponseContent.setBinaryFile() Serving %s as %s encoding %s att flag %r\n" % (filePath, contentType, encodingType, attachmentFlag))
+                    self.__lfh.write("+ResponseContent.setBinaryFile() Serving %s as %s encoding %s att flag %r\n" % (
+                    filePath, contentType, encodingType, attachmentFlag))
         except Exception as e:
             self.__lfh.write("ResponseContent.setBinaryFile() File read failed %s error: %r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
@@ -435,7 +436,8 @@ class ResponseContent(object):
                 self._cD["disposition"] = "inline"
                 #
                 if self.__debug:  # pragma: no cover
-                    self.__lfh.write("+ResponseContent.wrapFileAsJsonp() Serving %s as %s\n" % (filePath, self._cD["datacontent"]))
+                    self.__lfh.write(
+                        "+ResponseContent.wrapFileAsJsonp() Serving %s as %s\n" % (filePath, self._cD["datacontent"]))
         except Exception as e:
             self.__lfh.write("ResponseContent.wrapFileAsJsonp() File read failed %s err=%r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
@@ -569,7 +571,8 @@ class ResponseContent(object):
         rspDict["RETURN_STRING"] = myText
         return rspDict
 
-    def __processTemplate(self, templateFilePath="./alignment_template.html", webIncludePath=".", parameterDict=None, insertContext=False):
+    def __processTemplate(self, templateFilePath="./alignment_template.html", webIncludePath=".", parameterDict=None,
+                          insertContext=False):
         """Read the input HTML template data file and perform the key/value substitutions in the
         input parameter dictionary.
 
@@ -585,7 +588,8 @@ class ResponseContent(object):
             ifh = open(templateFilePath, "r")
             sL = []
             for line in ifh.readlines():
-                if str(line).strip().startswith("<!--#include") or (insertContext and str(line).strip().startswith("<!--#insert")):
+                if str(line).strip().startswith("<!--#include") or (
+                        insertContext and str(line).strip().startswith("<!--#insert")):
                     fields = str(line).split('"')
                     tpth = os.path.join(webIncludePath, fields[1][1:])
                     try:
@@ -594,7 +598,9 @@ class ResponseContent(object):
                         tfh.close()
                     except Exception as e:
                         if self.__verbose:
-                            self.__lfh.write("+WebRequest.__processTemplate() failed to include %s fields=%r err=%r\n" % (tpth, fields, str(e)))
+                            self.__lfh.write(
+                                "+WebRequest.__processTemplate() failed to include %s fields=%r err=%r\n" % (
+                                tpth, fields, str(e)))
                 else:
                     sL.append(line)
             ifh.close()
