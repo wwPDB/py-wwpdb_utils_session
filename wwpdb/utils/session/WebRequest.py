@@ -32,12 +32,11 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-
-import sys
-import os
-import traceback
 import gzip
 import mimetypes
+import os
+import sys
+import traceback
 
 try:
     from json import loads, dumps
@@ -68,7 +67,6 @@ def json_serializer_helper(obj):
 
 
 class WebRequest(object):
-
     """Base container and accessors for input and output parameters and control information."""
 
     def __init__(self, paramDict=None, verbose=False):  # pylint: disable=unused-argument
@@ -223,7 +221,7 @@ class InputRequest(WebRequest):
         return self._getStringValue("sessionid")
 
     def getSessionPath(self):
-        return os.path.join(self._getStringValue("TopSessionPath"), "sessions")
+        return SessionManager(topPath=self._getStringValue("TopSessionPath")).getSessionsPath()
 
     def getTopSessionPath(self):
         return self._getStringValue("TopSessionPath")

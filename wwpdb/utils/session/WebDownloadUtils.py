@@ -34,9 +34,11 @@ Utilities to manage  web application download requests for archive and workflow 
 
 """
 
-import sys
 import os
+import sys
+
 from wwpdb.io.locator.PathInfo import PathInfo
+
 from wwpdb.utils.session.WebRequest import ResponseContent
 
 __docformat__ = "restructuredtext en"
