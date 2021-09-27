@@ -107,6 +107,8 @@ class FileUtilsBase(object):
                 "dcc-report",
                 "mapfix-report",
                 "fsc-report",
+                "res-est-fsc-report",
+                "map-model-fsc-report",
                 "em2em-report",
             ],
             "Message Files": ["messages-from-depositor", "messages-to-depositor", "notes-from-annotator", "correspondence-to-depositor"],
@@ -115,6 +117,14 @@ class FileUtilsBase(object):
                 "em-mask-volume",
                 "em-additional-volume",
                 "em-half-volume",
+                "em-raw-volume",
+                "em-fsc-half-mask-volume",
+                "em-fsc-map-model-mask-volume",
+                "em-alignment-mask-volume",
+                "em-focused-refinement-mask-volume",
+                "em-3d-classification-additional-volume",
+                "em-focus-refinement-additional-volume",
+                "em-segmentation-volume",
                 "em-volume-header",
                 "em-model-emd",
                 "em2em-report",
@@ -122,6 +132,9 @@ class FileUtilsBase(object):
                 "img-emdb-report",
                 "layer-lines",
                 "auxiliary-file",
+                "fsc",
+                "res-est-fsc",
+                "map-model-fsc"
             ],
         }
 
