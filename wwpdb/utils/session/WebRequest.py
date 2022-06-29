@@ -262,8 +262,30 @@ class InputRequest(WebRequest):
 
 #
 
+def file_iterator(filename, chunk_size=8192):
+    with open(filename, 'rb') as fp:
+        while True:
+            chunk = fp.read(chunk_size)
+
+            if not chunk:
+                break
+
+            yield chunk
+
+def gzip_file_iterator(filename, chunk_size=8192):
+    with gzip.open(filename, 'rb') as fp:
+        while True:
+            chunk = fp.read(chunk_size)
+
+            if not chunk:
+                break
+
+            yield chunk
 
 class ResponseContent(object):
+    MULTIPART_THRESHOLD = 8 * 1024 * 1024 # file size threshold to send file in chunks, 8mb
+    CHUNK_SIZE = 8 * 1024 * 1024
+
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
         Manage content items to be transfered as part of the application response.
@@ -382,14 +404,23 @@ class ResponseContent(object):
         try:
             if os.path.exists(filePath):
                 _dir, fn = os.path.split(filePath)
+                fileSize = os.path.getsize(filePath)
                 if not serveCompressed and fn.endswith(".gz"):
-                    with gzip.open(filePath, "rb") as fin:
-                        self._cD["datacontent"] = fin.read()
+                    if fileSize > ResponseContent.MULTIPART_THRESHOLD:
+                        self.__lfh.write("+ResponseContent.setBinaryFile() File too big (%s), sending as multipart\n" % (fileSize))
+                        self._cD["fileiterator"] = gzip_file_iterator(filePath, chunk_size=ResponseContent.CHUNK_SIZE)
+                    else:
+                        with gzip.open(filePath, "rb") as fin:
+                            self._cD["datacontent"] = fin.read()
                     self._cD["datafileName"] = fn[:-3]
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath[:-3])
                 else:
-                    with open(filePath, "rb") as fin:
-                        self._cD["datacontent"] = fin.read()
+                    if fileSize > ResponseContent.MULTIPART_THRESHOLD:
+                        self.__lfh.write("+ResponseContent.setBinaryFile() File too big (%s), sending as multipart\n" % (fileSize))
+                        self._cD["fileiterator"] = file_iterator(filePath, chunk_size=ResponseContent.CHUNK_SIZE)
+                    else:
+                        with open(filePath, "rb") as fin:
+                            self._cD["datacontent"] = fin.read()
                     self._cD["datafileName"] = fn
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath)
                 #
@@ -521,7 +552,11 @@ class ResponseContent(object):
             myD = {}
         rspDict = {}
         rspDict["CONTENT_TYPE"] = myD["datatype"]
-        rspDict["RETURN_STRING"] = myD["datacontent"]
+
+        if "fileiterator" in myD:
+            rspDict["FILE_ITERATOR"] = myD["fileiterator"]
+        else:
+            rspDict["RETURN_STRING"] = myD["datacontent"]
         try:
             rspDict["ENCODING"] = myD["encodingtype"]
             if myD["disposition"] is not None:
