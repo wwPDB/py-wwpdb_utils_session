@@ -410,6 +410,8 @@ class ResponseContent(object):
         if fileSize > ResponseContent.MULTIPART_THRESHOLD:
             self.__lfh.write("+ResponseContent._readFile() File too big (%s), sending as multipart\n" % (fileSize))
             self._cD["fileiterator"] = FileIterator(filePath, fileSize, uncompress=uncompress)
+            self._cD["disposition"] = "attachment"
+            self._cD["datafileName"] = self._cD["fileiterator"].fileName
         else:
             with open(filePath, "rb") as fin:
                 self._cD[dataContent] = fin.read()
