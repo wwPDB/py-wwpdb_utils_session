@@ -262,29 +262,35 @@ class InputRequest(WebRequest):
 
 #
 
-def file_iterator(filename, chunk_size=8192):
-    with open(filename, 'rb') as fp:
-        while True:
-            chunk = fp.read(chunk_size)
+class FileIterator(object):
+    CHUNK_SIZE = 8 * 1024 * 1024
 
-            if not chunk:
-                break
+    def __init__(self, filePath, fileSize, uncompress=False):
+        self.filePath = filePath
+        self.fileName = os.path.basename(self.filePath)
+        self.fileSize = fileSize if fileSize else os.path.getsize()
 
-            yield chunk
+        if uncompress:
+            self.fp = gzip.open(self.filePath, 'rb')
+        else:
+            self.fp = open(filePath, 'rb')
 
-def gzip_file_iterator(filename, chunk_size=8192):
-    with gzip.open(filename, 'rb') as fp:
-        while True:
-            chunk = fp.read(chunk_size)
+    def __iter__(self):
+        return self
 
-            if not chunk:
-                break
+    def next(self):
+        chunk = self.fp.read(self.CHUNK_SIZE)
 
-            yield chunk
+        if not chunk:
+            self.fp.close()
+            raise StopIteration
+
+        return chunk
+
+    __next__ = next
 
 class ResponseContent(object):
     MULTIPART_THRESHOLD = 8 * 1024 * 1024 # file size threshold to send file in chunks, 8mb
-    CHUNK_SIZE = 8 * 1024 * 1024
 
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
@@ -399,31 +405,21 @@ class ResponseContent(object):
             ret = (mtype, encoding)
         return ret
     
-    def _readFile(self, filePath, dataContent="datacontent"):
+    def _readFile(self, filePath, uncompress=False, dataContent="datacontent"):
         fileSize = os.path.getsize(filePath)
         if fileSize > ResponseContent.MULTIPART_THRESHOLD:
             self.__lfh.write("+ResponseContent._readFile() File too big (%s), sending as multipart\n" % (fileSize))
-            self._cD["fileiterator"] = file_iterator(filePath, chunk_size=ResponseContent.CHUNK_SIZE)
+            self._cD["fileiterator"] = FileIterator(filePath, fileSize, uncompress=uncompress)
         else:
             with open(filePath, "rb") as fin:
-                self._cD[dataContent] = fin.read()
-
-    def _readCompressedFile(self, filePath, dataContent="datacontent"):
-        fileSize = os.path.getsize(filePath)
-        if fileSize > ResponseContent.MULTIPART_THRESHOLD:
-            self.__lfh.write("+ResponseContent._readCompressedFile() File too big (%s), sending as multipart\n" % (fileSize))
-            self._cD["fileiterator"] = gzip_file_iterator(filePath, chunk_size=ResponseContent.CHUNK_SIZE)
-        else:
-            with gzip.open(filePath, "rb") as fin:
                 self._cD[dataContent] = fin.read()
 
     def setBinaryFile(self, filePath, attachmentFlag=False, serveCompressed=True):
         try:
             if os.path.exists(filePath):
                 _dir, fn = os.path.split(filePath)
-                fileSize = os.path.getsize(filePath)
                 if not serveCompressed and fn.endswith(".gz"):
-                    self._readCompressedFile(filePath)
+                    self._readFile(filePath, uncompress=True)
                     self._cD["datafileName"] = fn[:-3]
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath[:-3])
                 else:
