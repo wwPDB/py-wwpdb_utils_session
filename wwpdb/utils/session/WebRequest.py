@@ -262,8 +262,36 @@ class InputRequest(WebRequest):
 
 #
 
+class FileIterator(object):
+    CHUNK_SIZE = 8 * 1024 * 1024
+
+    def __init__(self, filePath, fileSize, uncompress=False):
+        self.filePath = filePath
+        self.fileName = os.path.basename(self.filePath)
+        self.fileSize = fileSize if fileSize else os.path.getsize()
+
+        if uncompress:
+            self.fp = gzip.open(self.filePath, 'rb')
+        else:
+            self.fp = open(filePath, 'rb')
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        chunk = self.fp.read(self.CHUNK_SIZE)
+
+        if not chunk:
+            self.fp.close()
+            raise StopIteration
+
+        return chunk
+
+    __next__ = next
 
 class ResponseContent(object):
+    MULTIPART_THRESHOLD = 8 * 1024 * 1024 # file size threshold to send file in chunks, 8mb
+
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
         Manage content items to be transfered as part of the application response.
@@ -356,8 +384,7 @@ class ResponseContent(object):
     def setTextFile(self, filePath):
         try:
             if os.path.exists(filePath):
-                with open(filePath, "r") as fin:
-                    self._cD["textcontent"] = fin.read()
+                self._readFile(filePath, dataContent="textcontent")
         except Exception as e:
             self.__lfh.write("+setTextFile() File read failed %s %s\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
@@ -377,19 +404,28 @@ class ResponseContent(object):
         else:
             ret = (mtype, encoding)
         return ret
+    
+    def _readFile(self, filePath, uncompress=False, dataContent="datacontent"):
+        fileSize = os.path.getsize(filePath)
+        if fileSize > ResponseContent.MULTIPART_THRESHOLD:
+            self.__lfh.write("+ResponseContent._readFile() File too big (%s), sending as multipart\n" % (fileSize))
+            self._cD["fileiterator"] = FileIterator(filePath, fileSize, uncompress=uncompress)
+            self._cD["disposition"] = "attachment"
+            self._cD["datafileName"] = self._cD["fileiterator"].fileName
+        else:
+            with open(filePath, "rb") as fin:
+                self._cD[dataContent] = fin.read()
 
     def setBinaryFile(self, filePath, attachmentFlag=False, serveCompressed=True):
         try:
             if os.path.exists(filePath):
                 _dir, fn = os.path.split(filePath)
                 if not serveCompressed and fn.endswith(".gz"):
-                    with gzip.open(filePath, "rb") as fin:
-                        self._cD["datacontent"] = fin.read()
+                    self._readFile(filePath, uncompress=True)
                     self._cD["datafileName"] = fn[:-3]
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath[:-3])
                 else:
-                    with open(filePath, "rb") as fin:
-                        self._cD["datacontent"] = fin.read()
+                    self._readFile(filePath)
                     self._cD["datafileName"] = fn
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath)
                 #
@@ -490,7 +526,7 @@ class ResponseContent(object):
                 rD = self.__initHtmlResponse(self._cD["statustext"])
         elif self.__returnFormat == "text":
             if self._cD["errorflag"] is False:
-                rD = self.__initTextResponse(self._cD["textcontent"])
+                rD = self.__initTextResponse(self._cD)
             else:
                 rD = self.__initHtmlResponse(self._cD["statustext"])
         elif self.__returnFormat == "json":
@@ -521,7 +557,12 @@ class ResponseContent(object):
             myD = {}
         rspDict = {}
         rspDict["CONTENT_TYPE"] = myD["datatype"]
-        rspDict["RETURN_STRING"] = myD["datacontent"]
+
+        if "fileiterator" in myD:
+            rspDict["FILE_ITERATOR"] = myD["fileiterator"]
+        else:
+            rspDict["RETURN_STRING"] = myD["datacontent"]
+
         try:
             rspDict["ENCODING"] = myD["encodingtype"]
             if myD["disposition"] is not None:
@@ -561,10 +602,17 @@ class ResponseContent(object):
         rspDict["RETURN_STRING"] = myHtml
         return rspDict
 
-    def __initTextResponse(self, myText=""):
+    def __initTextResponse(self, myD=None):
+        if myD is None:
+            myD = {}
         rspDict = {}
         rspDict["CONTENT_TYPE"] = "text/plain"
-        rspDict["RETURN_STRING"] = myText
+
+        if "fileiterator" in myD:
+            rspDict["FILE_ITERATOR"] = myD["fileiterator"]
+        else:
+            rspDict["RETURN_STRING"] = myD["textcontent"]
+
         return rspDict
 
     def __processTemplate(self, templateFilePath="./alignment_template.html", webIncludePath=".", parameterDict=None, insertContext=False):
