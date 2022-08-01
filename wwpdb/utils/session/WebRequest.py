@@ -289,8 +289,9 @@ class FileIterator(object):
 
     __next__ = next
 
+
 class ResponseContent(object):
-    MULTIPART_THRESHOLD = 8 * 1024 * 1024 # file size threshold to send file in chunks, 8mb
+    MULTIPART_THRESHOLD = 8 * 1024 * 1024  # file size threshold to send file in chunks, 8mb
 
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
@@ -404,7 +405,7 @@ class ResponseContent(object):
         else:
             ret = (mtype, encoding)
         return ret
-    
+
     def _readFile(self, filePath, uncompress=False, dataContent="datacontent"):
         fileSize = os.path.getsize(filePath)
         if fileSize > ResponseContent.MULTIPART_THRESHOLD:
