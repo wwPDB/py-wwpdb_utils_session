@@ -263,12 +263,28 @@ class InputRequest(WebRequest):
 #
 
 class FileIterator(object):
+    """File iterator for reading big files
+    in chunks.
+
+    Attributes:
+        filePath (str): path of file
+        fileName (str): name of file
+        fileSize (int): size in bytes of file
+    """
     CHUNK_SIZE = 8 * 1024 * 1024
 
     def __init__(self, filePath, fileSize, uncompress=False):
+        """Opens the given file for reading.
+
+        Args:
+            filePath (str): path of file
+            fileSize (int): size in bytes of file
+            uncompress (bool, optional): indicates if the file should be
+            read uncompressed. Defaults to False.
+        """
         self.filePath = filePath
         self.fileName = os.path.basename(self.filePath)
-        self.fileSize = fileSize if fileSize else os.path.getsize()
+        self.fileSize = fileSize if fileSize else os.path.getsize(filePath)
 
         if uncompress:
             self.fp = gzip.open(self.filePath, 'rb')
