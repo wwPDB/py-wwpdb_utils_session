@@ -33,6 +33,7 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
 import gzip
+import io
 import mimetypes
 import os
 import sys
@@ -289,7 +290,12 @@ class FileIterator(object):
         self.fileSize = fileSize if fileSize else os.path.getsize(filePath)
 
         if uncompress:
-            self.fp = gzip.open(self.filePath, "rb")
+            self.fp = gzip.open(self.filePath, 'rb')
+
+            # the file size will be different when uncompressing
+            self.fp.seek(0, io.SEEK_END)
+            self.fileSize = self.fp.tell()
+            self.fp.seek(0)
         else:
             self.fp = open(filePath, "rb")
 
