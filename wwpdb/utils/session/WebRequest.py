@@ -263,6 +263,7 @@ class InputRequest(WebRequest):
 
 #
 
+
 class FileIterator(object):
     """File iterator for reading big files
     in chunks.
@@ -272,6 +273,7 @@ class FileIterator(object):
         fileName (str): name of file
         fileSize (int): size in bytes of file
     """
+
     CHUNK_SIZE = 8 * 1024 * 1024
 
     def __init__(self, filePath, fileSize, uncompress=False):
@@ -295,7 +297,7 @@ class FileIterator(object):
             self.fileSize = self.fp.tell()
             self.fp.seek(0)
         else:
-            self.fp = open(filePath, 'rb')
+            self.fp = open(filePath, "rb")
 
     def __iter__(self):
         return self
