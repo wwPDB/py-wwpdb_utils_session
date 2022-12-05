@@ -16,9 +16,9 @@ __version__ = "V0.01"
 import os
 import unittest
 import platform
-import cgi
 from io import BytesIO
 import filecmp
+from webob.compat import cgi_FieldStorage
 
 from wwpdb.utils.session.WebAppWorkerBase import WebAppWorkerBase
 from wwpdb.utils.session.WebRequest import InputRequest
@@ -30,7 +30,7 @@ def _create_fs(mimetype, content, filename="uploaded.txt", name="file"):
     headers = {u"content-disposition": u'form-data; name="{}"; filename="{}"'.format(name, filename), u"content-length": len(content), u"content-type": mimetype}
     environ = {"REQUEST_METHOD": "POST"}
     fp = BytesIO(content)
-    return cgi.FieldStorage(fp=fp, headers=headers, environ=environ)
+    return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)
 
 
 class MyWebAppWorker(WebAppWorkerBase):
