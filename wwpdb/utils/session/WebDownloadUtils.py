@@ -55,7 +55,6 @@ class WebDownloadUtils(object):
     """
 
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-
         self.__reqObj = reqObj
         self.__verbose = verbose
         self.__lfh = log

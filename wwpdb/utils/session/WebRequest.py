@@ -290,7 +290,7 @@ class FileIterator(object):
         self.fileSize = fileSize if fileSize else os.path.getsize(filePath)
 
         if uncompress:
-            self.fp = gzip.open(self.filePath, 'rb')
+            self.fp = gzip.open(self.filePath, "rb")
 
             # the file size will be different when uncompressing
             self.fp.seek(0, io.SEEK_END)
