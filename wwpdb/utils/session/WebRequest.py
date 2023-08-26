@@ -449,10 +449,16 @@ class ResponseContent(object):
                     self._readFile(filePath, uncompress=True)
                     self._cD["datafileName"] = fn[:-3]
                     contentType, encodingType = self.getMimetypeAndEncoding(filePath[:-3])
+                    encodingType = "gzip"
                 else:
                     self._readFile(filePath)
                     self._cD["datafileName"] = fn
-                    contentType, encodingType = self.getMimetypeAndEncoding(filePath)
+                    if fn.endswith(".gz"):
+                        contentType = "application/octet-stream"
+                        encodingType = None
+                    else:
+                        contentType, encodingType = self.getMimetypeAndEncoding(filePath)
+                    #
                 #
                 self._cD["datatype"] = contentType
                 self._cD["encodingtype"] = encodingType
@@ -464,7 +470,9 @@ class ResponseContent(object):
                     # strip compression file extension if disposition=inline.
                     if fn.endswith(".gz"):
                         self._cD["datafileName"] = fn[:-3]
-
+                        encodingType = "gzip"
+                    #
+                #
                 if self.__verbose:
                     self.__lfh.write("+ResponseContent.setBinaryFile() Serving %s as %s encoding %s att flag %r\n" % (filePath, contentType, encodingType, attachmentFlag))
         except Exception as e:
