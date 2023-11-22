@@ -102,8 +102,9 @@ class WebAppWorkerBase(object):
                 rC = mth()
             return rC
         except:  # noqa: E722 pylint: disable=bare-except
-            if self.__debug:
+            if self._verbose:
                 traceback.print_exc(file=self._lfh)
+            #
             rC = ResponseContent(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
             rC.setError(errMsg="Operation failure")
             return rC
