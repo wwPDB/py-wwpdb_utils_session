@@ -77,6 +77,7 @@ class FileUtilsBase(object):
                 "interface-assign",
                 "assembly-model",
                 "assembly-model-xyz",
+                "complexity-report",
                 "site-assign",
                 "map-2fofc",
                 "map-fofc",
