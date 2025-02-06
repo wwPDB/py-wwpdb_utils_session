@@ -38,7 +38,6 @@ import os
 import sys
 
 from wwpdb.io.locator.PathInfo import PathInfo
-
 from wwpdb.utils.session.WebRequest import ResponseContent
 
 __docformat__ = "restructuredtext en"
@@ -48,7 +47,7 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.09"
 
 
-class WebDownloadUtils(object):
+class WebDownloadUtils:
     """
     This class encapsulates handling download requests for workflow data files -
 
@@ -58,13 +57,13 @@ class WebDownloadUtils(object):
         self.__reqObj = reqObj
         self.__verbose = verbose
         self.__lfh = log
-        #
         self.__sessionObj = self.__reqObj.getSessionObj()
         self.__sessionPath = self.__sessionObj.getPath()
         self.__siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
 
-        self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
-        #
+        self.__pI = PathInfo(
+            siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh
+        )
         if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.__setup() - session id   %s\n" % (self.__sessionObj.getId()))
             self.__lfh.write("+WebDownloadUtils.__setup() - session path %s\n" % (self.__sessionPath))
@@ -84,7 +83,6 @@ class WebDownloadUtils(object):
     def __getDownloadFileInfo(self):
         """Extract target file details and return file path or None."""
         retPath = None
-        #
         dataSetId = self.__reqObj.getValue("data_set_id")
         if len(dataSetId) < 1:
             return retPath
@@ -102,10 +100,15 @@ class WebDownloadUtils(object):
         formatType = self.__reqObj.getValueOrDefault("format", default="pdbx")
         versionId = self.__reqObj.getValueOrDefault("version", default="latest")
         partNumber = self.__reqObj.getValueOrDefault("part", "1")
-        #
 
         retPath = self.__pI.getFilePath(
-            dataSetId, wfInstanceId=wfInstanceId, contentType=contentType, formatType=formatType, fileSource=fileSource, versionId=versionId, partNumber=partNumber
+            dataSetId,
+            wfInstanceId=wfInstanceId,
+            contentType=contentType,
+            formatType=formatType,
+            fileSource=fileSource,
+            versionId=versionId,
+            partNumber=partNumber,
         )
         return retPath
 
@@ -113,7 +116,6 @@ class WebDownloadUtils(object):
         """Create a response content object for the input file"""
         if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.__makeResponseContentObject() starting with file path %s\n" % filePath)
-        #
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         if filePath is not None and os.access(filePath, os.F_OK):
             rC.setReturnFormat("binary")

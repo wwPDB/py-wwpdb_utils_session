@@ -12,13 +12,14 @@
 Provide a storage interface for miscellaneous key,value data.
 
 """
-import sys
+
 import os.path
+import sys
 
 try:
-    import cPickle as pickle
+    import cPickle as pickle  # noqa: N813,S403
 except ImportError:
-    import pickle
+    import pickle  # noqa: S403
 
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
@@ -27,7 +28,7 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
 
-class UtilDataStore(object):
+class UtilDataStore:
     """Provide a storage interface for miscellaneous key,value data."""
 
     def __init__(self, reqObj, prefix=None, verbose=False, log=sys.stderr):
@@ -56,7 +57,7 @@ class UtilDataStore(object):
             if self.__verbose:
                 self.__lfh.write("\n+UtilDataStore.__setup() - data store path %s\n" % self.__filePath)
             self.deserialize()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__debug:
                 self.__lfh.write(
                     "\n+UtilDataStore.__setup() - Failed to open data store for session id %s data store prefix %s path %s err %s\n"
@@ -80,7 +81,7 @@ class UtilDataStore(object):
     def deserialize(self):
         try:
             fb = open(self.__filePath, "rb")
-            self.__D = pickle.load(fb)
+            self.__D = pickle.load(fb)  # noqa: S301
             fb.close()
             return True
         except:  # noqa: E722 pylint: disable=bare-except

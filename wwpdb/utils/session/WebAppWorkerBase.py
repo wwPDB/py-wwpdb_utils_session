@@ -16,28 +16,26 @@ This software is provided under a Creative Commons Attribution 3.0 Unported
 License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
+import ntpath
 import os
 import sys
 import time
-import types
 import traceback
-import ntpath
+import types
 
-#
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.session.UtilDataStore import UtilDataStore
 from wwpdb.utils.session.WebRequest import ResponseContent
 
-#
 
-
-class WebAppWorkerBase(object):
+class WebAppWorkerBase:
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
         Base class supporting web application worker methods.
@@ -54,14 +52,11 @@ class WebAppWorkerBase(object):
         self._sessionId = None
         self._sessionPath = None
         self._rltvSessionPath = None
-        #
         self._siteId = self._reqObj.getValue("WWPDB_SITE_ID")
         self._cI = ConfigInfo(self._siteId)
-        #
         self._uds = None
         # UtilDataStore prefix for general session data -- used by _getSession()
         self._udsPrefix = None
-        #
         self.__appPathD = {}
 
     def addService(self, url, opName):
@@ -79,7 +74,6 @@ class WebAppWorkerBase(object):
         Operation output is packaged in a ResponseContent() object.
 
         """
-        #
         try:
             inpReqPath = self._reqObj.getRequestPath()
             # first pull off the REST style URLS --
@@ -92,7 +86,6 @@ class WebAppWorkerBase(object):
                 reqPath = "/service/review/report"
             else:
                 reqPath = inpReqPath
-            #
             if reqPath not in self.__appPathD:
                 # bail out if operation is unknown -
                 rC = ResponseContent(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
@@ -104,12 +97,10 @@ class WebAppWorkerBase(object):
         except:  # noqa: E722 pylint: disable=bare-except
             if self._verbose:
                 traceback.print_exc(file=self._lfh)
-            #
             rC = ResponseContent(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
             rC.setError(errMsg="Operation failure")
             return rC
 
-    #
     def _saveSessionParameter(self, param=None, value=None, pvD=None, prefix=None):
         """Store the input (param,value) pair and/or the contents of parameter value
         dictionary (pvD) in the session parameter store.
@@ -125,9 +116,11 @@ class WebAppWorkerBase(object):
                     self._uds.set(k, v)
                 self._uds.serialize()
             return True
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self._verbose:
-                self._lfh.write("+WebAppWorkerBase._saveSessionParameter() failed in session %s - %r\n" % (self._sessionId, str(e)))
+                self._lfh.write(
+                    "+WebAppWorkerBase._saveSessionParameter() failed in session %s - %r\n" % (self._sessionId, str(e))
+                )
         return False
 
     def _getSessionParameter(self, param=None, prefix=None):
@@ -135,9 +128,11 @@ class WebAppWorkerBase(object):
         try:
             self._uds = UtilDataStore(reqObj=self._reqObj, prefix=prefix, verbose=self._verbose, log=self._lfh)
             return self._uds.get(param)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self._verbose:
-                self._lfh.write("+WebAppWorkerBase._getSessionParameter() failed in session %s - %r\n" % (self._sessionId, str(e)))
+                self._lfh.write(
+                    "+WebAppWorkerBase._getSessionParameter() failed in session %s - %r\n" % (self._sessionId, str(e))
+                )
         return ""
 
     def _getFileText(self, filePath):
@@ -173,9 +168,11 @@ class WebAppWorkerBase(object):
             uds = UtilDataStore(reqObj=self._reqObj, prefix=self._udsPrefix, verbose=self._verbose, log=self._lfh)
             dd = uds.getDictionary()
             if self.__debug:
-                self._lfh.write("+WebAppWorkerBase._verifySessionContext() -  importing persisted general session parameters:\n")
+                self._lfh.write(
+                    "+WebAppWorkerBase._verifySessionContext() -  importing persisted general session parameters:\n"
+                )
                 for k, v in dd.items():
-                    if isinstance(v, list) or isinstance(v, dict):
+                    if isinstance(v, (dict, list)):
                         self._lfh.write(" %30s length=%d\n" % (k, len(v)))
                     else:
                         self._lfh.write(" %30s= %r\n" % (k, v))
@@ -186,7 +183,7 @@ class WebAppWorkerBase(object):
             reqApiKey = self._reqObj.getValue("apikey")
             ok = apikyfn(reqApiKey)
             return ok
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self._verbose:
                 self._lfh.write("+WebAppWorkerBase._verifySessionContext() - failed - %r\n" % str(e))
             if self._verbose:
@@ -195,7 +192,6 @@ class WebAppWorkerBase(object):
 
     def _getSession(self, forceNew=False, useContext=False, overWrite=True):
         """Join existing session or create new session as required."""
-        #
         self._sObj = self._reqObj.newSessionObj(forceNew=forceNew)
 
         self._sessionId = self._sObj.getId()
@@ -212,7 +208,7 @@ class WebAppWorkerBase(object):
             if self.__debug:
                 self._lfh.write("+WebAppWorkerBase._getSession() -  importing persisted general session parameters:\n")
                 for k, v in dd.items():
-                    if isinstance(v, list) or isinstance(v, dict):
+                    if isinstance(v, (dict, list)):
                         self._lfh.write(" %30s length=%d\n" % (k, len(v)))
                     else:
                         self._lfh.write(" %30s= %r\n" % (k, v))
@@ -224,9 +220,8 @@ class WebAppWorkerBase(object):
         if sys.version_info[0] < 3:
             if (fs is None) or (isinstance(fs, types.StringType)):  # pylint: disable=no-member
                 return False
-        else:
-            if (fs is None) or (isinstance(fs, str)) or (isinstance(fs, bytes)):
-                return False
+        elif isinstance(fs, (bytes, str)):
+            return False
 
         return True
 
@@ -250,24 +245,31 @@ class WebAppWorkerBase(object):
             #
             fPathAbs = os.path.join(self._sessionPath, fName)
             if self._verbose:
-                self._lfh.write("+WebAppWorkerBase._uploadFile() - starting upload of %r to path %r\n" % (fNameInput, fPathAbs))
+                self._lfh.write(
+                    "+WebAppWorkerBase._uploadFile() - starting upload of %r to path %r\n" % (fNameInput, fPathAbs)
+                )
 
             ofh = open(fPathAbs, "wb")
             ofh.write(fs.file.read())
             ofh.close()
 
-            #
             if self._verbose:
-                self._lfh.write("+WebAppWorkerBase._uploadFile() - uploaded completed for file tag %s file name %s\n" % (fileTag, fName))
+                self._lfh.write(
+                    "+WebAppWorkerBase._uploadFile() - uploaded completed for file tag %s file name %s\n"
+                    % (fileTag, fName)
+                )
             #
             #  Store the file path and name in request object -
             #
             self._reqObj.setValue("filePath", fPathAbs)
             self._reqObj.setValue("fileName", fName)
             return fName
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self._verbose:
-                self._lfh.write("+WebAppWorkerBase._uploadFile() - Upload failed for file tag %s file name %s - %r\n" % (fileTag, fs.filename, str(e)))
+                self._lfh.write(
+                    "+WebAppWorkerBase._uploadFile() - Upload failed for file tag %s file name %s - %r\n"
+                    % (fileTag, fs.filename, str(e))
+                )
             if self.__debug:
                 traceback.print_exc(file=self._lfh)
         return None
@@ -283,7 +285,7 @@ class WebAppWorkerBase(object):
         fPathAbs = os.path.join(sessionPath, sessionId, semaphore + ".log")
         self._lfh = open(fPathAbs, "w")
 
-    def _closeSemaphoreLog(self, semaphore="TMP_"):  # pylint: disable=unused-argument
+    def _closeSemaphoreLog(self, semaphore="TMP_"):  # noqa: ARG002 pylint: disable=unused-argument
         self._lfh.flush()
         self._lfh.close()
 
@@ -302,8 +304,7 @@ class WebAppWorkerBase(object):
         fPathAbs = os.path.join(sessionPath, sessionId, semaphore)
         if os.access(fPathAbs, os.F_OK):
             return True
-        else:
-            return False
+        return False
 
     def _getSemaphore(self, semaphore="TMP_"):
         sessionId = self._reqObj.getSessionId()
@@ -312,7 +313,7 @@ class WebAppWorkerBase(object):
         if self._verbose:
             self._lfh.write("+ReviewDataWebApp.__getSemaphore() - checking %s in path %s\n" % (semaphore, fPathAbs))
         try:
-            fp = open(fPathAbs, "r")
+            fp = open(fPathAbs)
             lines = fp.readlines()
             fp.close()
             sval = lines[0][:-1]

@@ -4,8 +4,7 @@
 #
 # Updates:
 ##
-"""Test cases for WebRequests
-"""
+"""Test cases for WebRequests"""
 
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
@@ -14,12 +13,12 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
 import os
-import unittest
 import platform
 import sys
+import unittest
 from datetime import datetime
 
-from wwpdb.utils.session.WebRequest import WebRequest, InputRequest, ResponseContent
+from wwpdb.utils.session.WebRequest import InputRequest, ResponseContent, WebRequest
 
 
 class MyWebRequest(WebRequest):
@@ -133,7 +132,7 @@ class ResponseTests(unittest.TestCase):
         self.assertEqual(rc.get(), {"CONTENT_TYPE": "application/json", "RETURN_STRING": '["test"]'})
 
         # ResponseContent
-        d = datetime.now()
+        d = datetime.now()  # noqa: DTZ005
         rc.set("date", d, asJson=True)
         rc.set("Other", "value")
         rc.setReturnFormat("json")
@@ -173,7 +172,9 @@ class ResponseTests(unittest.TestCase):
         rc.setHtmlTextFromTemplate(os.path.join(self.__HERE, "template.txt"), self.__HERE, parameterDict={"T1": 2})
         sys.stderr.write("%s\n" % rc.dump())
         # Should error
-        rc.setHtmlTextFromTemplate(os.path.join(self.__HERE, "missingtemplate.txt"), self.__HERE, parameterDict={"T1": 2})
+        rc.setHtmlTextFromTemplate(
+            os.path.join(self.__HERE, "missingtemplate.txt"), self.__HERE, parameterDict={"T1": 2}
+        )
 
         # Files
         rc.setTextFile(os.path.join(self.__HERE, "template.txt"))

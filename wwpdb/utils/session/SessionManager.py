@@ -15,6 +15,8 @@ Provides containment and access for session information.  Methods
 are provided to create temporary directories to preserve session files.
 
 """
+
+import contextlib
 import hashlib
 import os.path
 import shutil
@@ -28,7 +30,7 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
 
-class SessionManager(object):
+class SessionManager:
     """
     Utilities for session directory maintenance.
 
@@ -49,7 +51,11 @@ class SessionManager(object):
         self.__uid = None
 
     def __str__(self):
-        return "\n+SessionManager() Session top path: %s\nUnique identifier: %s\nSession path: %s\n" % (self.__topSessionPath, self.__uid, self.getPath())
+        return "\n+SessionManager() Session top path: %s\nUnique identifier: %s\nSession path: %s\n" % (
+            self.__topSessionPath,
+            self.__uid,
+            self.getPath(),
+        )
 
     def __repr__(self):
         return self.__str__()
@@ -63,7 +69,7 @@ class SessionManager(object):
     def assignId(self):
         # Need to convert to str (python2)/bytes (python3)
         tmp = repr(time.time()).encode("utf-8")
-        self.__uid = hashlib.sha1(tmp).hexdigest()
+        self.__uid = hashlib.sha1(tmp).hexdigest()  # noqa: S324
         return self.__uid
 
     def getSessionsPath(self):
@@ -76,8 +82,7 @@ class SessionManager(object):
                 sys.stderr.write("+SessionManager.getPath() path %s\n" % pth)
             if os.access(pth, os.F_OK):
                 return pth
-            else:
-                return None
+            return None
         except:  # noqa: E722 pylint: disable=bare-except
             return None
 
@@ -86,11 +91,8 @@ class SessionManager(object):
 
     def getRelativePath(self):
         pth = None
-        try:
+        with contextlib.suppress(Exception):
             pth = os.path.join("/sessions", self.__uid)
-
-        except:  # noqa: E722 pylint: disable=bare-except
-            pass
         return pth
 
     def makeSessionPath(self):

@@ -4,8 +4,7 @@
 #
 # Updates:
 ##
-"""Test cases for FileUtils
-"""
+"""Test cases for FileUtils"""
 
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
@@ -13,9 +12,9 @@ __email__ = "peisach@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
-from io import BytesIO
 import os
 import unittest
+from io import BytesIO
 
 from wwpdb.utils.session.WwPdbWebOb import WwPdbRequest, WwPdbResponse
 
@@ -41,7 +40,13 @@ class WwPdbWebObTests(unittest.TestCase):
 
     def test_Post_nofile(self):
         """Tests request with no data. Code path completeness"""
-        data = b"------------------------------deb95b63e42a\n" b'Content-Disposition: form-data; name="foo"\n' b"\n" b"foo\n" b"------------------------------deb95b63e42a--\n"
+        data = (
+            b"------------------------------deb95b63e42a\n"
+            b'Content-Disposition: form-data; name="foo"\n'
+            b"\n"
+            b"foo\n"
+            b"------------------------------deb95b63e42a--\n"
+        )
         wsgi_input = BytesIO(data)
         environ = {
             "wsgi.input": wsgi_input,
@@ -86,7 +91,7 @@ class WwPdbWebObTests(unittest.TestCase):
         """Tests file download - file descriptor leak wrapper fix"""
 
         # File larger than 8kb
-        dirpath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "session")
+        dirpath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "wwpdb", "utils", "session")
         bigfile = os.path.join(dirpath, "WebRequest.py")
         with open(bigfile, "rb") as fin:
             fdata = fin.read()
