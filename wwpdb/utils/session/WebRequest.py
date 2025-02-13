@@ -43,7 +43,7 @@ import traceback
 try:
     from json import dumps, loads
 except:  # noqa: E722 pylint: disable=bare-except
-    from simplejson import dumps, loads
+    from simplejson import dumps, loads  # type: ignore
 
 from datetime import datetime
 

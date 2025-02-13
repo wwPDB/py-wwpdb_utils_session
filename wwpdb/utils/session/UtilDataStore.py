@@ -17,7 +17,7 @@ import os.path
 import sys
 
 try:
-    import cPickle as pickle  # noqa: N813,S403
+    import cPickle as pickle  # type: ignore[import-not-found] # noqa: N813,S403
 except ImportError:
     import pickle  # noqa: S403
 
