@@ -4,8 +4,7 @@
 #
 # Updates:
 ##
-"""Test cases for WebAppWorkerBaseTests
-"""
+"""Test cases for WebAppWorkerBaseTests"""
 
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
@@ -13,11 +12,12 @@ __email__ = "peisach@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
-import os
-import unittest
-import platform
-from io import BytesIO
 import filecmp
+import os
+import platform
+import unittest
+from io import BytesIO
+
 from webob.compat import cgi_FieldStorage
 
 from wwpdb.utils.session.WebAppWorkerBase import WebAppWorkerBase
@@ -27,7 +27,11 @@ from wwpdb.utils.session.WebRequest import InputRequest
 # The following is from https://stackoverflow.com/questions/12032807/how-to-create-cgi-fieldstorage-for-testing-purposes
 def _create_fs(mimetype, content, filename="uploaded.txt", name="file"):
     content = content.encode("utf-8")
-    headers = {u"content-disposition": u'form-data; name="{}"; filename="{}"'.format(name, filename), u"content-length": len(content), u"content-type": mimetype}
+    headers = {
+        "content-disposition": f'form-data; name="{name}"; filename="{filename}"',
+        "content-length": len(content),
+        "content-type": mimetype,
+    }
     environ = {"REQUEST_METHOD": "POST"}
     fp = BytesIO(content)
     return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)
@@ -79,7 +83,7 @@ class SessionTests(unittest.TestCase):
             os.makedirs(sdir)
 
         fname = os.path.join(HERE, "WebAppWorkerBaseTests.py")
-        with open(fname, "r") as fin:
+        with open(fname) as fin:
             content = fin.read()
         fs = _create_fs("text", content, filename=fname)
         self.__paramDict = {"TopSessionPath": [self.__sessiontop], "request_path": ["service/testpath"], "file": [fs]}

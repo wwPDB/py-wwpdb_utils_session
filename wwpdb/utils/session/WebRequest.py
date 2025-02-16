@@ -26,6 +26,7 @@ WebRequest provides containers and accessors for managing request parameter info
 This is an application neutral version shared by UI modules --
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -40,12 +41,13 @@ import sys
 import traceback
 
 try:
-    from json import loads, dumps
+    from json import dumps, loads
 except:  # noqa: E722 pylint: disable=bare-except
-    from simplejson import loads, dumps
+    from simplejson import dumps, loads  # type: ignore
+
+from datetime import datetime
 
 from wwpdb.utils.session.SessionManager import SessionManager
-from datetime import datetime
 
 
 def json_serializer_helper(obj):
@@ -57,20 +59,18 @@ def json_serializer_helper(obj):
     if isinstance(obj, datetime):
         serial = obj.isoformat()
         return serial
-    else:
-        try:
-            serial = str(obj)
-            return serial
-        except Exception as e:
-            raise TypeError("Could not convert object to string %r %r " % (obj, str(e)))
-    #
+    try:
+        serial = str(obj)
+        return serial
+    except Exception as e:  # noqa: BLE001
+        raise TypeError("Could not convert object to string %r %r " % (obj, str(e))) from e
     raise TypeError("Type not serializable %r " % obj)
 
 
-class WebRequest(object):
+class WebRequest:
     """Base container and accessors for input and output parameters and control information."""
 
-    def __init__(self, paramDict=None, verbose=False):  # pylint: disable=unused-argument
+    def __init__(self, paramDict=None, verbose=False):  # noqa: ARG002 pylint: disable=unused-argument
         if paramDict is None:
             paramDict = {}
         #
@@ -104,7 +104,7 @@ class WebRequest(object):
         except:  # noqa: E722 pylint: disable=bare-except
             pass
 
-    def dump(self, format="text"):  # pylint: disable=redefined-builtin
+    def dump(self, format="text"):  # noqa: A002 pylint: disable=redefined-builtin
         oL = []
         try:
             if format == "html":
@@ -146,8 +146,6 @@ class WebRequest(object):
     def getDictionary(self):
         return self.__dict
 
-    #
-
     def setValue(self, myKey, aValue):
         self.__dict[myKey] = [aValue]
 
@@ -165,7 +163,6 @@ class WebRequest(object):
         except:  # noqa: E722 pylint: disable=bare-except
             return False
 
-    #
     def _getRawValue(self, myKey):
         try:
             return self.__dict[myKey][0]
@@ -198,7 +195,7 @@ class WebRequest(object):
 
 
 class InputRequest(WebRequest):
-    def __init__(self, paramDict, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
+    def __init__(self, paramDict, verbose=False, log=sys.stderr):  # noqa: ARG002 pylint: disable=unused-argument
         super(InputRequest, self).__init__(paramDict, verbose)
         self.__returnFormatDefault = ""
 
@@ -261,10 +258,7 @@ class InputRequest(WebRequest):
         return sObj
 
 
-#
-
-
-class FileIterator(object):
+class FileIterator:
     """File iterator for reading big files
     in chunks.
 
@@ -287,7 +281,7 @@ class FileIterator(object):
         """
         self.filePath = filePath
         self.fileName = os.path.basename(self.filePath)
-        self.fileSize = fileSize if fileSize else os.path.getsize(filePath)
+        self.fileSize = fileSize or os.path.getsize(filePath)
 
         if uncompress:
             self.fp = gzip.open(self.filePath, "rb")
@@ -314,7 +308,7 @@ class FileIterator(object):
     __next__ = next
 
 
-class ResponseContent(object):
+class ResponseContent:
     MULTIPART_THRESHOLD = 8 * 1024 * 1024  # file size threshold to send file in chunks, 8mb
 
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
@@ -325,7 +319,6 @@ class ResponseContent(object):
         self.__verbose = verbose
         self.__lfh = log
         self.__reqObj = reqObj
-        #
         self._cD = {}
         self.__debug = False
         self.__returnFormat = ""
@@ -342,7 +335,6 @@ class ResponseContent(object):
         self._cD["datafilename"] = None
         self._cD["disposition"] = None
 
-        #
         self._cD["datacontent"] = None
         self._cD["errorflag"] = False
         self._cD["statustext"] = ""
@@ -356,7 +348,6 @@ class ResponseContent(object):
         else:
             self._cD["sessionid"] = ""
             self._cD["semaphore"] = ""
-        #
 
     def setData(self, dataObj=None):
         self._cD["datacontent"] = dataObj
@@ -365,7 +356,7 @@ class ResponseContent(object):
         if asJson:
             try:
                 self._cD[key] = dumps(val, default=json_serializer_helper)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self.__lfh.write("+set() failed %r\n" % str(e))
                 traceback.print_exc(file=self.__lfh)
         else:
@@ -389,7 +380,12 @@ class ResponseContent(object):
 
     def setHtmlTextFromTemplate(self, templateFilePath, webIncludePath, parameterDict=None, insertContext=False):
         pD = parameterDict if parameterDict is not None else {}
-        self._cD["htmlcontent"] = self.__processTemplate(templateFilePath=templateFilePath, webIncludePath=webIncludePath, parameterDict=pD, insertContext=insertContext)
+        self._cD["htmlcontent"] = self.__processTemplate(
+            templateFilePath=templateFilePath,
+            webIncludePath=webIncludePath,
+            parameterDict=pD,
+            insertContext=insertContext,
+        )
 
     def setHtmlLinkText(self, htmlText=""):
         self._cD["htmllinkcontent"] = htmlText
@@ -410,15 +406,16 @@ class ResponseContent(object):
         try:
             if os.path.exists(filePath):
                 self._readFile(filePath, dataContent="textcontent")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.__lfh.write("+setTextFile() File read failed %s %s\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
     def setTextFileO(self, filePath):
-        with open(filePath, "r") as fin:
+        with open(filePath) as fin:
             self._cD["textcontent"] = fin.read()
 
-    def getMimetypeAndEncoding(self, filename):
+    @staticmethod
+    def getMimetypeAndEncoding(filename):
         mtype, encoding = mimetypes.guess_type(filename)
         # We'll ignore encoding, even though we shouldn't really
         if mtype is None:
@@ -458,8 +455,6 @@ class ResponseContent(object):
                         encodingType = None
                     else:
                         contentType, encodingType = self.getMimetypeAndEncoding(filePath)
-                    #
-                #
                 self._cD["datatype"] = contentType
                 self._cD["encodingtype"] = encodingType
                 if attachmentFlag:
@@ -471,11 +466,12 @@ class ResponseContent(object):
                     if fn.endswith(".gz"):
                         self._cD["datafileName"] = fn[:-3]
                         encodingType = "gzip"
-                    #
-                #
                 if self.__verbose:
-                    self.__lfh.write("+ResponseContent.setBinaryFile() Serving %s as %s encoding %s att flag %r\n" % (filePath, contentType, encodingType, attachmentFlag))
-        except Exception as e:
+                    self.__lfh.write(
+                        "+ResponseContent.setBinaryFile() Serving %s as %s encoding %s att flag %r\n"
+                        % (filePath, contentType, encodingType, attachmentFlag)
+                    )
+        except Exception as e:  # noqa: BLE001
             self.__lfh.write("ResponseContent.setBinaryFile() File read failed %s error: %r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
@@ -484,26 +480,24 @@ class ResponseContent(object):
             if os.path.exists(filePath):
                 _dir, fn = os.path.split(filePath)
                 (_rn, ext) = os.path.splitext(fn)
-                #
                 dd = {}
-                with open(filePath, "r") as fin:
+                with open(filePath) as fin:
                     dd["data"] = fin.read()
                 if ext.lower() != ".json":
                     self._cD["datacontent"] = callBack + "(" + dumps(dd) + ");"
                 else:
                     self._cD["datacontent"] = callBack + "(" + dd["data"] + ");"
-                #
                 self._cD["datafileName"] = fn
                 contentType = "application/x-javascript"
                 encodingType = None
-                #
                 self._cD["datatype"] = contentType
                 self._cD["encodingtype"] = encodingType
                 self._cD["disposition"] = "inline"
-                #
                 if self.__debug:  # pragma: no cover
-                    self.__lfh.write("+ResponseContent.wrapFileAsJsonp() Serving %s as %s\n" % (filePath, self._cD["datacontent"]))
-        except Exception as e:
+                    self.__lfh.write(
+                        "+ResponseContent.wrapFileAsJsonp() Serving %s as %s\n" % (filePath, self._cD["datacontent"])
+                    )
+        except Exception as e:  # noqa: BLE001
             self.__lfh.write("ResponseContent.wrapFileAsJsonp() File read failed %s err=%r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
@@ -534,7 +528,7 @@ class ResponseContent(object):
         for k, v in self._cD.items():
             if v is None:
                 continue
-            elif isinstance(v, dict):
+            if isinstance(v, dict):
                 retL.append("  - key = %-35s " % k)
                 retL.append("  - dict : %s\n" % list(v.items()))
             elif v is not None and len(str(v).strip()) > 0:
@@ -542,12 +536,11 @@ class ResponseContent(object):
                 retL.append(" value(1-%d): %s\n" % (maxLength, str(v)[:maxLength]))
         return retL
 
-    def setReturnFormat(self, format):  # pylint: disable=redefined-builtin
+    def setReturnFormat(self, format):  # noqa: A002 pylint: disable=redefined-builtin
         if format in ["html", "text", "json", "jsonText", "jsonData", "location", "binary", "jsonp"]:
             self.__returnFormat = format
             return True
-        else:
-            return False
+        return False
 
     def get(self):
         """Repackage the response for Apache according to the input return_format='html|json|text|...'"""
@@ -576,16 +569,17 @@ class ResponseContent(object):
             rD = self.__initJsonpResponse(self._cD)
         else:
             pass
-        #
         return rD
 
-    def __initLocationResponse(self, url):
+    @staticmethod
+    def __initLocationResponse(url):
         rspDict = {}
         rspDict["CONTENT_TYPE"] = "location"
         rspDict["RETURN_STRING"] = url
         return rspDict
 
-    def __initBinaryResponse(self, myD=None):
+    @staticmethod
+    def __initBinaryResponse(myD=None):
         if myD is None:
             myD = {}
         rspDict = {}
@@ -604,7 +598,8 @@ class ResponseContent(object):
             pass
         return rspDict
 
-    def __initJsonResponse(self, myD=None):
+    @staticmethod
+    def __initJsonResponse(myD=None):
         if myD is None:
             myD = {}
         rspDict = {}
@@ -612,7 +607,8 @@ class ResponseContent(object):
         rspDict["RETURN_STRING"] = dumps(myD)
         return rspDict
 
-    def __initJsonpResponse(self, myD=None):
+    @staticmethod
+    def __initJsonpResponse(myD=None):
         if myD is None:
             myD = {}
         rspDict = {}
@@ -620,7 +616,8 @@ class ResponseContent(object):
         rspDict["RETURN_STRING"] = myD["datacontent"]
         return rspDict
 
-    def __initJsonResponseInTextArea(self, myD=None):
+    @staticmethod
+    def __initJsonResponseInTextArea(myD=None):
         if myD is None:
             myD = {}
         rspDict = {}
@@ -629,13 +626,15 @@ class ResponseContent(object):
         rspDict["RETURN_STRING"] = "<textarea>" + dumps(myD) + "</textarea>"
         return rspDict
 
-    def __initHtmlResponse(self, myHtml=""):
+    @staticmethod
+    def __initHtmlResponse(myHtml=""):
         rspDict = {}
         rspDict["CONTENT_TYPE"] = "text/html"
         rspDict["RETURN_STRING"] = myHtml
         return rspDict
 
-    def __initTextResponse(self, myD=None):
+    @staticmethod
+    def __initTextResponse(myD=None):
         if myD is None:
             myD = {}
         rspDict = {}
@@ -648,7 +647,9 @@ class ResponseContent(object):
 
         return rspDict
 
-    def __processTemplate(self, templateFilePath="./alignment_template.html", webIncludePath=".", parameterDict=None, insertContext=False):
+    def __processTemplate(
+        self, templateFilePath="./alignment_template.html", webIncludePath=".", parameterDict=None, insertContext=False
+    ):
         """Read the input HTML template data file and perform the key/value substitutions in the
         input parameter dictionary.
 
@@ -661,25 +662,30 @@ class ResponseContent(object):
         if parameterDict is None:
             parameterDict = {}
         try:
-            ifh = open(templateFilePath, "r")
+            ifh = open(templateFilePath)
             sL = []
-            for line in ifh.readlines():
-                if str(line).strip().startswith("<!--#include") or (insertContext and str(line).strip().startswith("<!--#insert")):
+            for line in ifh.readlines():  # noqa: FURB129
+                if str(line).strip().startswith("<!--#include") or (
+                    insertContext and str(line).strip().startswith("<!--#insert")
+                ):
                     fields = str(line).split('"')
                     tpth = os.path.join(webIncludePath, fields[1][1:])
                     try:
-                        tfh = open(tpth, "r")
+                        tfh = open(tpth)
                         sL.append(tfh.read())
                         tfh.close()
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001
                         if self.__verbose:
-                            self.__lfh.write("+WebRequest.__processTemplate() failed to include %s fields=%r err=%r\n" % (tpth, fields, str(e)))
+                            self.__lfh.write(
+                                "+WebRequest.__processTemplate() failed to include %s fields=%r err=%r\n"
+                                % (tpth, fields, str(e))
+                            )
                 else:
                     sL.append(line)
             ifh.close()
             sIn = "".join(sL)
             return sIn % parameterDict
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write("+WebRequest.__processTemplate() failed for %s %r\n" % (templateFilePath, str(e)))
                 traceback.print_exc(file=self.__lfh)

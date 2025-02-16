@@ -4,8 +4,7 @@
 #
 # Updates:
 ##
-"""Test cases for FileUtils
-"""
+"""Test cases for FileUtils"""
 
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
@@ -15,8 +14,8 @@ __version__ = "V0.01"
 
 import unittest
 
-from wwpdb.utils.session.FileUtils import FileUtilsBase
 from wwpdb.utils.config.ConfigInfoData import ConfigInfoData
+from wwpdb.utils.session.FileUtils import FileUtilsBase
 
 
 class MyFileUtilsBase(FileUtilsBase):
@@ -27,8 +26,7 @@ class MyFileUtilsBase(FileUtilsBase):
         rset = set()
         for ky in self._rDList:
             ctList = self._rD[ky]
-            for ct in ctList:
-                rset.add(ct)
+            rset.update(ctList)
         return list(rset)
 
 

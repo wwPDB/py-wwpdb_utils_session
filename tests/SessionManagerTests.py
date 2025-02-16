@@ -4,8 +4,7 @@
 #
 # Updates:
 ##
-"""Test cases for SessionManager
-"""
+"""Test cases for SessionManager"""
 
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
@@ -14,9 +13,9 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
 import os
-import unittest
 import platform
 import shutil
+import unittest
 
 from wwpdb.utils.session.SessionManager import SessionManager
 

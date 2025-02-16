@@ -12,18 +12,18 @@ __email__ = "peisach@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
-import unittest
 import os
 import platform
+import unittest
 from io import BytesIO
 
+from wwpdb.utils.session.FileUtils import FileUtils
 from wwpdb.utils.session.SessionManager import SessionManager
 from wwpdb.utils.session.UtilDataStore import UtilDataStore
 from wwpdb.utils.session.WebAppWorkerBase import WebAppWorkerBase
 from wwpdb.utils.session.WebDownloadUtils import WebDownloadUtils
-from wwpdb.utils.session.WebRequest import WebRequest, InputRequest
+from wwpdb.utils.session.WebRequest import InputRequest, WebRequest
 from wwpdb.utils.session.WebUploadUtils import WebUploadUtils
-from wwpdb.utils.session.FileUtils import FileUtils
 from wwpdb.utils.session.WwPdbWebOb import WwPdbRequest, WwPdbResponse
 
 
