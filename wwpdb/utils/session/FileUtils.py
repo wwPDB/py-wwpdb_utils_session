@@ -93,6 +93,7 @@ class FileUtilsBase:
                 "secondary-structure-topology",
                 "map-header-data",
                 "fsc",
+                "topology-file"
             ],
             "Check reports": [
                 "validation-report-depositor",
