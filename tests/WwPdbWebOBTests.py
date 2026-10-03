@@ -6,6 +6,8 @@
 ##
 """Test cases for FileUtils"""
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
@@ -20,10 +22,10 @@ from wwpdb.utils.session.WwPdbWebOb import WwPdbRequest, WwPdbResponse
 
 
 class WwPdbWebObTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         pass
 
-    def test_Post_empty(self):
+    def test_Post_empty(self) -> None:
         """Tests request with no data. Code path completeness"""
         data = b""
         wsgi_input = BytesIO(data)
@@ -38,15 +40,9 @@ class WwPdbWebObTests(unittest.TestCase):
             p = req.params
             self.assertEqual(len(p), 0)
 
-    def test_Post_nofile(self):
+    def test_Post_nofile(self) -> None:
         """Tests request with no data. Code path completeness"""
-        data = (
-            b"------------------------------deb95b63e42a\n"
-            b'Content-Disposition: form-data; name="foo"\n'
-            b"\n"
-            b"foo\n"
-            b"------------------------------deb95b63e42a--\n"
-        )
+        data = b"------------------------------deb95b63e42a\n" b'Content-Disposition: form-data; name="foo"\n' b"\n" b"foo\n" b"------------------------------deb95b63e42a--\n"
         wsgi_input = BytesIO(data)
         environ = {
             "wsgi.input": wsgi_input,
@@ -59,7 +55,7 @@ class WwPdbWebObTests(unittest.TestCase):
             p = req.params
             self.assertEqual(len(p), 1)
 
-    def test_Post_multipart(self):
+    def test_Post_multipart(self) -> None:
         """Tests file download - file descriptor leak wrapper fix"""
 
         data = (
@@ -87,7 +83,7 @@ class WwPdbWebObTests(unittest.TestCase):
             p = req.params
             self.assertEqual(len(p), 2)
 
-    def test_Post_multipart_large(self):
+    def test_Post_multipart_large(self) -> None:
         """Tests file download - file descriptor leak wrapper fix"""
 
         # File larger than 8kb
@@ -121,7 +117,32 @@ class WwPdbWebObTests(unittest.TestCase):
             p = req.params
             self.assertEqual(len(p), 2)
 
-    def testResponse(self):
+    def test_Post_filename_is_name(self) -> None:
+        """Tests file upload where the file name matches the field name"""
+        data = (
+            b"------------------------------deb95b63e42a\n"
+            b'Content-Disposition: form-data; name="bar"; filename="bar"\n'
+            b"Content-type: application/octet-stream\n"
+            b"\n"
+            b"contents\n"
+            b"------------------------------deb95b63e42a--\n"
+        )
+        wsgi_input = BytesIO(data)
+        environ = {
+            "wsgi.input": wsgi_input,
+            "webob.is_body_seekable": True,
+            "REQUEST_METHOD": "POST",
+            "CONTENT_TYPE": "multipart/form-data; " "boundary=----------------------------deb95b63e42a",
+            "CONTENT_LENGTH": len(data),
+        }
+        with WwPdbRequest(environ) as req:
+            fs = req.params["bar"]
+            self.assertEqual(fs.filename, "bar")
+        # Not closed by the wrapper
+        self.assertFalse(fs.file.closed)
+        fs.file.close()
+
+    def testResponse(self) -> None:
         r = WwPdbResponse()
         r.status = "200 OK"
         r.content_type = "text/html"

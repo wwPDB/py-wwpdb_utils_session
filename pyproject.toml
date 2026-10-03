@@ -17,10 +17,8 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
 ]
 dependencies = [
     "WebOB",
@@ -28,7 +26,7 @@ dependencies = [
     "wwpdb.utils.config",
 ]
 
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 
 # [project.optional-dependencies]
 
@@ -49,8 +47,10 @@ include = [
 packages = ["wwpdb"]
 
 #=================================== Ruff basics =============================#
-
+[tool.ruff]
 line-length = 120 # 120 is hatch's default via 'hatch init'
+output-format = "concise"
+
 include = [
   "*.py",           # Source
   "pyproject.toml", # This file (RUF rules only)
@@ -68,6 +68,7 @@ preview = true
 explicit-preview-rules = true
 
 ignore = [
+  "DOC201",   #  `return` is not documented in docstring
   "FBT002",   # Boolean default positional argument in function definition
   "FURB113",  #  Use `stPL.extend(...)` instead of repeatedly calling `stPL.append()`
   "INP001",   # File `xx` is part of an implicit namespace package. Add an `__init__.py
@@ -82,6 +83,7 @@ ignore = [
   "PLR6201",  # Use a `set` literal when testing for membership
   "PLW1514",  # `open` in text mode without explicit `encoding` argument
   "PT009",    # Use a regular `assert` instead of unittest-style `assertGreater`
+  "PT027",    #  Use `pytest.raises` instead of unittest-style `assertRaises`
   "RET504",   # Unnecessary assignment to `X` before `return` statement
   "RUF100",   # RUF REMOVES FLAKE8 noqa!
   "S110",     # `try`-`except`-`pass` detected, consider logging the exception
@@ -94,9 +96,13 @@ ignore = [
   "UP031"     # Use format specifiers instead of percent format
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# 1. Ignore specific rules in a specific file
+"tests/*.py" = ["FBT001"]
+
 # -------------------- default environment scripts ------------------
 [tool.hatch.envs.default]
-skip-install = true
+# skip-install = true
 dependencies = ["mypy", "ruff >=0.6.9"]
 
 
@@ -122,6 +128,11 @@ check-mypy = "mypy --non-interactive --install-types -p wwpdb -p tests {args}"
 
 # only check security via Bandit; we require these rules to pass
 check-security = "ruff check --select S --no-fix ."
+
+# -------------------------  Mypy ---------------------------------------
+[tool.mypy]
+exclude = ["tests/test-output/"]
+
 
 # -------------------------  Mypy disable until stubs availabl ---------
 [[tool.mypy.overrides]]
