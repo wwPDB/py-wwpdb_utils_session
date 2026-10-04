@@ -15,21 +15,35 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
 import contextlib
+from types import TracebackType
+from typing import Any, Dict, Optional, Type
 
 from webob import Request as webob_Request
 from webob import Response as webob_Response
 
 
 class WwPdbRequest:
-    def __init__(self, environ, charset=None, unicode_errors=None, decode_param_names=None, **kw):
+    def __init__(
+        self,
+        environ: Dict[str, Any],
+        charset: Optional[str] = None,
+        unicode_errors: Optional[str] = None,
+        decode_param_names: Optional[bool] = None,
+        **kw: Any,
+    ) -> None:
         self.req = webob_Request(
             environ, charset=charset, unicode_errors=unicode_errors, decode_param_names=decode_param_names, **kw
         )
 
-    def __enter__(self):
+    def __enter__(self) -> webob_Request:
         return self.req
 
-    def __exit__(self, type, value, traceback):  # noqa: A002 # pylint: disable=redefined-builtin
+    def __exit__(
+        self,
+        type: Optional[Type[BaseException]],  # noqa: A002,A003 # pylint: disable=redefined-builtin
+        value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:  # noqa: A002 # pylint: disable=redefined-builtin
         for name, fs in self.req.params.items():
             if isinstance(fs, (bytes, str)):
                 continue
@@ -48,5 +62,5 @@ class WwPdbRequest:
                     self.req.body_file_raw.close()
 
 
-class WwPdbResponse(webob_Response):
+class WwPdbResponse(webob_Response):  # type: ignore[misc,unused-ignore]
     """Pass through for webob Reponse class in case we need to add a wrapper later"""

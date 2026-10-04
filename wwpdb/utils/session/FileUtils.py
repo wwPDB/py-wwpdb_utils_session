@@ -27,17 +27,23 @@ import glob
 import os
 import os.path
 import sys
+from typing import TYPE_CHECKING, Dict, List, Optional, TextIO, Tuple, cast
 
 from wwpdb.io.file.DataExchange import DataExchange
 from wwpdb.io.locator.PathInfo import PathInfo
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
+from wwpdb.utils.session.WebRequest import InputRequest
+
+if TYPE_CHECKING:
+    from wwpdb.io.locator.PathInfo import PathInfoStorageType
+
 
 class FileUtilsBase:
     """Base class that defines the content types to download"""
 
-    def __init__(self):
-        self._rDList = [
+    def __init__(self) -> None:
+        self._rDList: List[str] = [
             "Primary Data Files",
             "Chemical Assignment Files",
             "Sequence Assignment Files",
@@ -46,7 +52,7 @@ class FileUtilsBase:
             "Message Files",
             "3DEM Files",
         ]
-        self._rD = {
+        self._rD: Dict[str, List[str]] = {
             "Primary Data Files": [
                 "model",
                 "structure-factors",
@@ -94,7 +100,7 @@ class FileUtilsBase:
                 "secondary-structure-topology",
                 "map-header-data",
                 "fsc",
-                "topology-file"
+                "topology-file",
             ],
             "Check reports": [
                 "validation-report-depositor",
@@ -152,10 +158,13 @@ class FileUtils(FileUtilsBase):
 
     """
 
-    def __init__(self, entryId, reqObj=None, verbose=False, log=sys.stderr):
+    def __init__(
+        self, entryId: str, reqObj: Optional[InputRequest] = None, verbose: bool = False, log: TextIO = sys.stderr
+    ) -> None:
         self.__verbose = verbose
         self.__lfh = log
-        self.__reqObj = reqObj
+        # cast() is for typing only - a None request object is not supported and fails below
+        self.__reqObj = cast("InputRequest", reqObj)
         # Reassign siteId for the following special case --
         self.__entryId = entryId
         siteId = self.__reqObj.getValue("WWPDB_SITE_ID")
@@ -172,7 +181,7 @@ class FileUtils(FileUtilsBase):
         super(FileUtils, self).__init__()
         self.__setup(siteId=siteId)
 
-    def __setup(self, siteId=None):
+    def __setup(self, siteId: Optional[str] = None) -> None:
         if siteId is not None:
             self.__siteId = siteId
         else:
@@ -182,20 +191,27 @@ class FileUtils(FileUtilsBase):
             % (self.__entryId, self.__siteId)
         )
         self.__sObj = self.__reqObj.getSessionObj()
-        self.__sessionId = self.__sObj.getId()
-        self.__sessionPath = self.__sObj.getPath()
+        # cast() is for typing only - an existing session is required
+        self.__sessionId = cast("str", self.__sObj.getId())
+        self.__sessionPath = cast("str", self.__sObj.getPath())
         self.__pI = PathInfo(
             siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh
         )
         self.__cI = ConfigInfo(self.__siteId)
         self.__msL = self.__cI.get("CONTENT_MILESTONE_LIST")
 
-    def renderFileList(self, fileSource="archive", rDList=None, titlePrefix="", titleSuffix="", displayImageFlag=False):
-        """"""
+    def renderFileList(
+        self,
+        fileSource: str = "archive",
+        rDList: Optional[List[str]] = None,
+        titlePrefix: str = "",
+        titleSuffix: str = "",
+        displayImageFlag: bool = False,
+    ) -> Tuple[int, List[str]]:
         if rDList is None:
             rDList = self._rDList
 
-        htmlList = []
+        htmlList: List[str] = []
         nTot = 0
         if fileSource in ["archive", "deposit", "wf-archive"]:
             for ky in rDList:
@@ -211,7 +227,7 @@ class FileUtils(FileUtilsBase):
                         fList.append(mt)
                 nF, oL = self.__renderContentTypeFileList(
                     self.__entryId,
-                    fileSource=fileSource,
+                    fileSource=cast("PathInfoStorageType", fileSource),
                     wfInstanceId=None,
                     contentTypeList=fList,
                     title=title,
@@ -235,7 +251,8 @@ class FileUtils(FileUtilsBase):
 
         if fileSource in ["wf-instance", "instance"]:
             iTopPath = self.__pI.getInstanceTopPath(self.__entryId)
-            fPattern = os.path.join(iTopPath, "*")
+            # cast() is for typing only - a None path raises TypeError
+            fPattern = os.path.join(cast("str", iTopPath), "*")
             wfInstancePathList = filter(os.path.isdir, glob.glob(fPattern))
             for wfInstancePath in wfInstancePathList:
                 (_pth, wfInstId) = os.path.split(wfInstancePath)
@@ -247,8 +264,14 @@ class FileUtils(FileUtilsBase):
         return nTot, htmlList
 
     def __renderContentTypeFileList(
-        self, entryId, fileSource="archive", wfInstanceId=None, contentTypeList=None, title=None, displayImageFlag=False
-    ):
+        self,
+        entryId: str,
+        fileSource: "PathInfoStorageType" = "archive",
+        wfInstanceId: Optional[str] = None,
+        contentTypeList: Optional[List[str]] = None,
+        title: Optional[str] = None,
+        displayImageFlag: bool = False,
+    ) -> Tuple[int, List[str]]:
         if contentTypeList is None:
             contentTypeList = ["model"]
         if self.__verbose:
@@ -266,7 +289,7 @@ class FileUtils(FileUtilsBase):
             log=self.__lfh,
         )
         tupL = de.getContentTypeFileList(fileSource=fileSource, contentTypeList=contentTypeList)
-        rTupL = []
+        rTupL: List[Tuple[str, str, str]] = []
         for tup in tupL:
             href, fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
@@ -295,7 +318,9 @@ class FileUtils(FileUtilsBase):
 
         return nF, htmlList
 
-    def __renderWfInstanceFileList(self, entryId, wfPath, title=None):
+    def __renderWfInstanceFileList(
+        self, entryId: str, wfPath: str, title: Optional[str] = None
+    ) -> Tuple[int, List[str]]:
         if self.__verbose:
             self.__lfh.write("+FileUtils.renderWfInstanceFileList() wfPath %s\n" % wfPath)
 
@@ -310,7 +335,7 @@ class FileUtils(FileUtilsBase):
             log=self.__lfh,
         )
         tupL = de.getMiscFileList(fPatternList=[wfPattern], sortFlag=True)
-        rTupL = []
+        rTupL: List[Tuple[str, str, str]] = []
         for tup in tupL:
             href, _fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
@@ -326,7 +351,9 @@ class FileUtils(FileUtilsBase):
 
         return nF, htmlList
 
-    def __renderLogFileList(self, entryId, fileSource="archive", title=None):
+    def __renderLogFileList(
+        self, entryId: str, fileSource: "PathInfoStorageType" = "archive", title: Optional[str] = None
+    ) -> Tuple[int, List[str]]:
         if self.__verbose:
             self.__lfh.write("+FileUtils.renderLogFileList() entryId %r fileSource %r\n" % (entryId, fileSource))
         de = DataExchange(
@@ -339,7 +366,7 @@ class FileUtils(FileUtilsBase):
             log=self.__lfh,
         )
         tupL = de.getLogFileList(entryId, fileSource=fileSource)
-        rTupL = []
+        rTupL: List[Tuple[str, str, str]] = []
         for tup in tupL:
             href, _fN = self.__makeDownloadHref(tup[0])
             if tup[2] > 1:
@@ -356,8 +383,10 @@ class FileUtils(FileUtilsBase):
         return nF, htmlList
 
     @staticmethod
-    def __renderFileList(fileTupleList, title, embeddedTitle=True):
-        oL = []
+    def __renderFileList(
+        fileTupleList: List[Tuple[str, str, str]], title: str, embeddedTitle: bool = True
+    ) -> Tuple[int, List[str]]:
+        oL: List[str] = []
         if len(fileTupleList) > 0:
             if embeddedTitle:
                 oL.append('<table class="table table-bordered table-striped table-condensed">')
@@ -383,7 +412,7 @@ class FileUtils(FileUtilsBase):
             oL.append("</table>")
         return len(fileTupleList), oL
 
-    def __makeDownloadHref(self, filePath):
+    def __makeDownloadHref(self, filePath: str) -> Tuple[str, str]:
         _dP, fN = os.path.split(filePath)
         tS = "/service/review_v2/download_file?sessionid=" + self.__sessionId + "&file_path=" + filePath
         href = "<a class='my-file-downloadable' href='" + tS + "'>" + fN + "</a>"

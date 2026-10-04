@@ -6,6 +6,8 @@
 ##
 """Test cases for SessionManager"""
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
@@ -16,19 +18,20 @@ import os
 import platform
 import shutil
 import unittest
+from typing import cast
 
 from wwpdb.utils.session.SessionManager import SessionManager
 
 
 class SessionTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         HERE = os.path.abspath(os.path.dirname(__file__))
         TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
         if not os.path.exists(TESTOUTPUT):  # pragma: no cover
             os.makedirs(TESTOUTPUT)
         self.__sessiontop = TESTOUTPUT
 
-    def testId(self):
+    def testId(self) -> None:
         """Tests generation of session id for python"""
         sm = SessionManager()
         # Not set
@@ -44,7 +47,7 @@ class SessionTests(unittest.TestCase):
         self.assertIsNotNone(sm.getTopPath(), "Top path should not be none")
         self.assertIsNotNone(sm.getRelativePath(), "Relative path should not be none")
 
-    def testBadPath(self):
+    def testBadPath(self) -> None:
         """Tests bad path access"""
         here = os.path.abspath(os.path.dirname(__file__))
         badpath = os.path.join(here, "bad_dir_for_sessions")
@@ -52,11 +55,11 @@ class SessionTests(unittest.TestCase):
         self.assertIsNone(sm.getPath(), "Expected path should be None")
 
         # Test with path of None - should error out
-        sm = SessionManager(None)
+        sm = SessionManager(None)  # type: ignore[arg-type]
         self.assertIsNone(sm.getPath(), "Expected path should be None")
         self.assertIsNone(sm.getTopPath(), "Top path expected to be none")
 
-    def testSessionPathCreation(self):
+    def testSessionPathCreation(self) -> None:
         """Tests creation of session dir"""
         sessdir = os.path.join(self.__sessiontop, "sesscreate")
         if os.path.exists(sessdir):  # pragma: no cover
@@ -71,6 +74,27 @@ class SessionTests(unittest.TestCase):
         self.assertIsNotNone(sm.makeSessionPath(), "Creating session path uid set")
         self.assertIsNotNone(sm.remakeSessionPath(), "Creating session path uid set")
         self.assertIsNotNone(sm.getPath(), "Expected path should not be None")
+        self.assertEqual(sm.getPath(), os.path.join(sessdir, "sessions", cast("str", sm.getId())))
+        self.assertEqual(sm.getRelativePath(), "/sessions/" + cast("str", sm.getId()))
+
+    def testRemakeSessionPath(self) -> None:
+        """Tests remaking session dir removes existing content"""
+        sessdir = os.path.join(self.__sessiontop, "sessremake")
+        sm = SessionManager(sessdir)
+        sm.assignId()
+        pth = cast("str", sm.makeSessionPath())
+        self.assertIsNotNone(pth)
+        fpath = os.path.join(pth, "afile.txt")
+        with open(fpath, "w") as fout:
+            fout.write("data")
+        # Existing directory kept
+        self.assertEqual(sm.makeSessionPath(), pth)
+        self.assertTrue(os.path.exists(fpath))
+        # Directory recreated empty
+        self.assertEqual(sm.remakeSessionPath(), pth)
+        self.assertFalse(os.path.exists(fpath))
+        self.assertEqual(sm.getSessionsPath(), os.path.join(sessdir, "sessions"))
+        shutil.rmtree(sessdir, ignore_errors=True)
 
 
 if __name__ == "__main__":  # pragma: no cover

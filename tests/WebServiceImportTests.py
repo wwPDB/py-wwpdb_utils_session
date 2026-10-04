@@ -6,6 +6,8 @@
 ##
 """Test cases for webservice - simply import everything to ensure imports work"""
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
@@ -28,7 +30,7 @@ from wwpdb.utils.session.WwPdbWebOb import WwPdbRequest, WwPdbResponse
 
 
 class ImportTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         HERE = os.path.abspath(os.path.dirname(__file__))
         TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
         if not os.path.exists(TESTOUTPUT):  # pragma: no cover
@@ -38,8 +40,8 @@ class ImportTests(unittest.TestCase):
         if not os.path.exists(sdir):  # pragma: no cover
             os.makedirs(sdir)
 
-    def testInstantiate(self):
-        _vc = WebRequest()  # noqa: F841
+    def testInstantiate(self) -> None:
+        _vc: object = WebRequest()  # noqa: F841
         params = {"TopSessionPath": [self.__sessiontop]}
         reqobj = InputRequest(params)
 
