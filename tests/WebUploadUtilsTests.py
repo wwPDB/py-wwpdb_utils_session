@@ -37,7 +37,7 @@ def _create_fs(mimetype: str, content: bytes, filename: str = "uploaded.txt", na
     }
     environ = {"REQUEST_METHOD": "POST"}
     fp = BytesIO(content)
-    return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)  # type: ignore[call-arg]
+    return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)  # type: ignore
 
 
 class WebUploadUtilsTests(unittest.TestCase):
