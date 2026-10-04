@@ -19,6 +19,7 @@ import shutil
 import tempfile
 import unittest
 from io import StringIO
+from typing import cast
 
 from wwpdb.utils.session.UtilDataStore import UtilDataStore
 from wwpdb.utils.session.WebRequest import InputRequest
@@ -28,7 +29,7 @@ class UtilDataStoreTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tmpDir = tempfile.mkdtemp()
         self.reqObj = InputRequest({"TopSessionPath": [self.tmpDir]})
-        self.sessionPath: str = self.reqObj.newSessionObj().getPath()
+        self.sessionPath = cast("str", self.reqObj.newSessionObj().getPath())
 
     def tearDown(self) -> None:
         shutil.rmtree(self.tmpDir, ignore_errors=True)
@@ -67,7 +68,7 @@ class UtilDataStoreTests(unittest.TestCase):
         self.assertFalse(uds.append("k1", 1))
         self.assertFalse(uds.extend("k1", [1]))
         self.assertFalse(uds.updateDict("k1", "s", 1))
-        self.assertFalse(uds.set(["unhashable"], 1))
+        self.assertFalse(uds.set(["unhashable"], 1))  # type: ignore[arg-type]
         self.assertEqual(uds.get("k1"), 5)
 
     def testPersistence(self) -> None:
@@ -77,7 +78,7 @@ class UtilDataStoreTests(unittest.TestCase):
         uds.set("k1", "v1")
         uds.extend("l1", [1, 2])
         uds.serialize()
-        self.assertTrue(os.path.exists(uds.getFilePath()))
+        self.assertTrue(os.path.exists(cast("str", uds.getFilePath())))
 
         uds2 = UtilDataStore(self.reqObj, prefix="p1")
         self.assertEqual(uds2.get("k1"), "v1")

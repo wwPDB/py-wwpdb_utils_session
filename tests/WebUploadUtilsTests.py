@@ -20,7 +20,7 @@ import shutil
 import tempfile
 import unittest
 from io import BytesIO, StringIO
-from typing import Any
+from typing import Any, cast
 
 from webob.compat import cgi_FieldStorage
 
@@ -37,7 +37,7 @@ def _create_fs(mimetype: str, content: bytes, filename: str = "uploaded.txt", na
     }
     environ = {"REQUEST_METHOD": "POST"}
     fp = BytesIO(content)
-    return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)
+    return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)  # type: ignore[call-arg]
 
 
 class WebUploadUtilsTests(unittest.TestCase):
@@ -54,7 +54,7 @@ class WebUploadUtilsTests(unittest.TestCase):
         if extra:
             paramDict.update(extra)
         reqObj = InputRequest(paramDict)
-        self.sessionPath = reqObj.newSessionObj().getPath()
+        self.sessionPath = cast("str", reqObj.newSessionObj().getPath())
         return WebUploadUtils(reqObj, verbose=verbose, log=StringIO())
 
     def testIsFileUpload(self) -> None:

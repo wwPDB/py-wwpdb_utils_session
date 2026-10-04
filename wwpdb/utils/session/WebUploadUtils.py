@@ -26,6 +26,9 @@ import shutil
 import sys
 import traceback
 import types
+from typing import Optional, TextIO, Tuple, cast
+
+from wwpdb.utils.session.WebRequest import InputRequest
 
 
 class WebUploadUtils:
@@ -34,18 +37,20 @@ class WebUploadUtils:
 
     """
 
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__reqObj = reqObj
+    def __init__(self, reqObj: Optional[InputRequest] = None, verbose: bool = False, log: TextIO = sys.stderr) -> None:
+        # cast() is for typing only - a None request object is not supported and fails below
+        self.__reqObj = cast("InputRequest", reqObj)
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
         self.__sessionObj = self.__reqObj.getSessionObj()
-        self.__sessionPath = self.__sessionObj.getPath()
+        # cast() is for typing only - an existing session is required
+        self.__sessionPath = cast("str", self.__sessionObj.getPath())
         if self.__verbose:
             self.__lfh.write("+WebUploadUtils.__setup() - session id   %s\n" % (self.__sessionObj.getId()))
             self.__lfh.write("+WebUploadUtils.__setup() - session path %s\n" % (self.__sessionPath))
 
-    def isFileUpload(self, fileTag="file"):
+    def isFileUpload(self, fileTag: str = "file") -> bool:
         """Generic check for the existence of request paramenter "fileTag="."""
         # Gracefully exit if no file is provide in the request object -
         fs = self.__reqObj.getRawValue(fileTag)
@@ -53,14 +58,14 @@ class WebUploadUtils:
         if self.__debug:
             self.__lfh.write("+WebUploadUtils.isFileUpLoad() fs  %r\n" % fs)
 
-        if sys.version_info[0] < 3:
+        if sys.version_info[0] < 3:  # noqa: UP036
             if isinstance(fs, (types.StringType, types.UnicodeType)):  # pylint: disable=no-member
                 return False
         elif isinstance(fs, (bytes, str)):
             return False
         return True
 
-    def getUploadFileName(self, fileTag="file"):
+    def getUploadFileName(self, fileTag: str = "file") -> Optional[str]:
         """Get the user supplied name of for the uploaded file -"""
         if self.__verbose:
             self.__lfh.write("+WebUploadUtils.getUploadFileName() - operation started\n")
@@ -87,7 +92,9 @@ class WebUploadUtils:
                 traceback.print_exc(file=self.__lfh)
         return None
 
-    def copyToSession(self, fileTag="file", sessionFileName=None, uncompress=True):
+    def copyToSession(
+        self, fileTag: str = "file", sessionFileName: Optional[str] = None, uncompress: bool = True
+    ) -> Optional[str]:
         """Copy uploaded file identified form element name 'fileTag' to the current session directory.
 
         File is copied to user uploaded file or to the sessionFileName if this is provided.
@@ -148,7 +155,7 @@ class WebUploadUtils:
                 traceback.print_exc(file=self.__lfh)
             return None
 
-    def renameSessionFile(self, srcFileName, dstFileName):
+    def renameSessionFile(self, srcFileName: str, dstFileName: str) -> bool:
         try:
             if srcFileName != dstFileName:
                 srcPath = os.path.join(self.__sessionPath, srcFileName)
@@ -159,7 +166,7 @@ class WebUploadUtils:
             return False
 
     @staticmethod
-    def getFileExtension(fileName, ignoreVersion=False):
+    def getFileExtension(fileName: Optional[str], ignoreVersion: bool = False) -> Optional[str]:
         """Return the file extension (basename.ext).
 
         If the input file contains no '.' then None is returned.
@@ -167,7 +174,7 @@ class WebUploadUtils:
         if ignoreVersion=True then any trailing version details are
            discarded before extracting the file extension -
         """
-        fExt = None
+        fExt: Optional[str] = None
         if fileName is None or len(fileName) < 1:
             return fExt
 
@@ -189,12 +196,12 @@ class WebUploadUtils:
 
         return fExt
 
-    def perceiveIdentifier(self, fileName):
+    def perceiveIdentifier(self, fileName: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
         """Return the file identifier and identifier source if these can be deduced from
         the input file name.   Returned values are in uppercase.
         """
-        fId = None
-        fType = None
+        fId: Optional[str] = None
+        fType: Optional[str] = None
         if fileName is None or len(fileName) < 1:
             return fId, fType
 
@@ -231,8 +238,7 @@ class WebUploadUtils:
 
         return fId, fType
 
-    def __copyGzip(self, inpFilePath, outFilePath):
-        """"""
+    def __copyGzip(self, inpFilePath: str, outFilePath: str) -> bool:
         try:
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
             os.system(cmd)  # noqa: S605

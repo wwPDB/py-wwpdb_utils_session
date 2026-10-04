@@ -20,7 +20,7 @@ import shutil
 import tempfile
 import unittest
 from io import StringIO
-from typing import Tuple
+from typing import Tuple, cast
 from unittest import mock
 
 from wwpdb.utils.config.ConfigInfoData import ConfigInfoData
@@ -38,8 +38,8 @@ class FileUtilsTestBase(unittest.TestCase):
         self.tmpDir = tempfile.mkdtemp()
         self.reqObj = InputRequest({"TopSessionPath": [self.tmpDir]})
         sObj = self.reqObj.newSessionObj()
-        self.sessionId: str = sObj.getId()
-        self.sessionPath: str = sObj.getPath()
+        self.sessionId = cast("str", sObj.getId())
+        self.sessionPath = cast("str", sObj.getPath())
 
         self.deP = mock.patch("wwpdb.utils.session.FileUtils.DataExchange")
         self.piP = mock.patch("wwpdb.utils.session.FileUtils.PathInfo")

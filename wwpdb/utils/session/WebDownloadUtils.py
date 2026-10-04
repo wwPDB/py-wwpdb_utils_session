@@ -36,9 +36,14 @@ Utilities to manage  web application download requests for archive and workflow 
 
 import os
 import sys
+from typing import TYPE_CHECKING, Optional, TextIO, cast
 
 from wwpdb.io.locator.PathInfo import PathInfo
-from wwpdb.utils.session.WebRequest import ResponseContent
+
+from wwpdb.utils.session.WebRequest import InputRequest, ResponseContent
+
+if TYPE_CHECKING:
+    from wwpdb.io.locator.PathInfo import PathInfoStorageType
 
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
@@ -53,8 +58,9 @@ class WebDownloadUtils:
 
     """
 
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__reqObj = reqObj
+    def __init__(self, reqObj: Optional[InputRequest] = None, verbose: bool = False, log: TextIO = sys.stderr) -> None:
+        # cast() is for typing only - a None request object is not supported and fails below
+        self.__reqObj = cast("InputRequest", reqObj)
         self.__verbose = verbose
         self.__lfh = log
         self.__sessionObj = self.__reqObj.getSessionObj()
@@ -68,7 +74,7 @@ class WebDownloadUtils:
             self.__lfh.write("+WebDownloadUtils.__setup() - session id   %s\n" % (self.__sessionObj.getId()))
             self.__lfh.write("+WebDownloadUtils.__setup() - session path %s\n" % (self.__sessionPath))
 
-    def makeDownloadResponse(self):
+    def makeDownloadResponse(self) -> ResponseContent:
         """Return a response object correponding to a download action for data file described by the
         parameter content in the request object.
         """
@@ -80,9 +86,9 @@ class WebDownloadUtils:
             self.__lfh.write("+WebDownloadUtils.makeResponse() target file path is %s\n" % filePath)
         return self.__makeResponseContentObject(filePath=filePath)
 
-    def __getDownloadFileInfo(self):
+    def __getDownloadFileInfo(self) -> Optional[str]:
         """Extract target file details and return file path or None."""
-        retPath = None
+        retPath: Optional[str] = None
         dataSetId = self.__reqObj.getValue("data_set_id")
         if len(dataSetId) < 1:
             return retPath
@@ -106,13 +112,15 @@ class WebDownloadUtils:
             wfInstanceId=wfInstanceId,
             contentType=contentType,
             formatType=formatType,
-            fileSource=fileSource,
+            fileSource=cast("PathInfoStorageType", fileSource),
             versionId=versionId,
             partNumber=partNumber,
         )
         return retPath
 
-    def __makeResponseContentObject(self, filePath, attachmentFlag=True, compressFlag=False):
+    def __makeResponseContentObject(
+        self, filePath: Optional[str], attachmentFlag: bool = True, compressFlag: bool = False
+    ) -> ResponseContent:
         """Create a response content object for the input file"""
         if self.__verbose:
             self.__lfh.write("+WebDownloadUtils.__makeResponseContentObject() starting with file path %s\n" % filePath)

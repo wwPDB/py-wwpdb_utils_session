@@ -23,7 +23,7 @@ import shutil
 import tempfile
 import unittest
 from io import BytesIO, StringIO
-from typing import Any, Callable
+from typing import Any, Callable, cast
 from unittest import mock
 
 from webob.compat import cgi_FieldStorage
@@ -42,7 +42,7 @@ def _create_fs(mimetype: str, content: str, filename: str = "uploaded.txt", name
     }
     environ = {"REQUEST_METHOD": "POST"}
     fp = BytesIO(bcontent)
-    return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)
+    return cgi_FieldStorage(fp=fp, headers=headers, environ=environ)  # type: ignore[call-arg]
 
 
 class MyWebAppWorker(WebAppWorkerBase):
@@ -100,13 +100,15 @@ class MyWebAppWorker(WebAppWorkerBase):
         return self._getSessionParameter(param, prefix)
 
     # Service operations for doOp() dispatch
-    def okOp(self) -> ResponseContent:
+    @staticmethod
+    def okOp() -> ResponseContent:
         rC = ResponseContent()
         rC.setHtmlText("okOp called")
         return rC
 
-    def failOp(self) -> ResponseContent:
-        raise ValueError("failOp")
+    @staticmethod
+    def failOp() -> ResponseContent:
+        raise ValueError("failOp")  # noqa: EM101
 
 
 class SessionTests(unittest.TestCase):
@@ -158,7 +160,7 @@ class SessionTests(unittest.TestCase):
 
         # File uploaded
         sObj = reqObj.getSessionObj()
-        sesspath = sObj.getPath()
+        sesspath = cast("str", sObj.getPath())
         self.assertTrue(app.isFileUpload())
         self.assertEqual(app.uploadFile(), "WebAppWorkerBaseTests.py")
         # Ensure present
@@ -294,7 +296,7 @@ class WebAppWorkerTests(unittest.TestCase):
         self.assertFalse(app.verifySessionContext(lambda k: k == "other"))
 
         def badKey(_k: str) -> bool:
-            raise ValueError("bad key function")
+            raise ValueError("bad key function")  # noqa: EM101,TRY003
 
         self.assertFalse(app.verifySessionContext(badKey))
         self.assertIn("bad key function", self.log.getvalue())
@@ -311,7 +313,7 @@ class WebAppWorkerTests(unittest.TestCase):
 
         app.getSession(forceNew=True)
         self.assertEqual(app.uploadFile(), "win.txt")
-        self.assertTrue(os.path.exists(os.path.join(self.reqObj.getSessionObj().getPath(), "win.txt")))
+        self.assertTrue(os.path.exists(os.path.join(cast("str", self.reqObj.getSessionObj().getPath()), "win.txt")))
 
         app = self.makeApp(verbose=False)
         app.getSession(forceNew=True)

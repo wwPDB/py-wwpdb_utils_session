@@ -100,7 +100,9 @@ class WebDownloadUtilsTests(unittest.TestCase):
         """Tests incomplete or invalid requests fail"""
         self.assertFailure(self.makeResponse({"content_type": "model"}))
         self.assertFailure(self.makeResponse({"data_set_id": "D_1000000001"}))
-        self.assertFailure(self.makeResponse({"data_set_id": "D_1000000001", "content_type": "model", "file_source": "bad"}))
+        self.assertFailure(
+            self.makeResponse({"data_set_id": "D_1000000001", "content_type": "model", "file_source": "bad"})
+        )
         self.mockPI.return_value.getFilePath.assert_not_called()
 
     def testMissingFile(self) -> None:

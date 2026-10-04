@@ -22,6 +22,7 @@ import os.path
 import shutil
 import sys
 import time
+from typing import Optional
 
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
@@ -36,7 +37,7 @@ class SessionManager:
 
     """
 
-    def __init__(self, topPath=".", verbose=False):
+    def __init__(self, topPath: str = ".", verbose: bool = False) -> None:
         """
         Organization of session directory is --
         <topPath>/<sha-hash>/<session_files>
@@ -48,34 +49,37 @@ class SessionManager:
         """
         self.__verbose = verbose
         self.__topSessionPath = topPath
-        self.__uid = None
+        self.__uid: Optional[str] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "\n+SessionManager() Session top path: %s\nUnique identifier: %s\nSession path: %s\n" % (
             self.__topSessionPath,
             self.__uid,
             self.getPath(),
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def setId(self, uid):
+    def setId(self, uid: Optional[str]) -> None:
         self.__uid = uid
 
-    def getId(self):
+    def getId(self) -> Optional[str]:
         return self.__uid
 
-    def assignId(self):
+    def assignId(self) -> str:
         # Need to convert to str (python2)/bytes (python3)
         tmp = repr(time.time()).encode("utf-8")
-        self.__uid = hashlib.sha1(tmp).hexdigest()  # noqa: S324
-        return self.__uid
+        uid = hashlib.sha1(tmp).hexdigest()  # noqa: S324
+        self.__uid = uid
+        return uid
 
-    def getSessionsPath(self):
+    def getSessionsPath(self) -> str:
         return os.path.join(self.getTopPath(), "sessions")
 
-    def getPath(self):
+    def getPath(self) -> Optional[str]:
+        if self.__uid is None:
+            return None
         try:
             pth = os.path.join(self.getSessionsPath(), self.__uid)
             if self.__verbose:
@@ -86,19 +90,23 @@ class SessionManager:
         except:  # noqa: E722 pylint: disable=bare-except
             return None
 
-    def getTopPath(self):
+    def getTopPath(self) -> str:
         return self.__topSessionPath
 
-    def getRelativePath(self):
-        pth = None
+    def getRelativePath(self) -> Optional[str]:
+        if self.__uid is None:
+            return None
+        pth: Optional[str] = None
         with contextlib.suppress(Exception):
             pth = os.path.join("/sessions", self.__uid)
         return pth
 
-    def makeSessionPath(self):
+    def makeSessionPath(self) -> Optional[str]:
         """If the path to the current session directory does not exist
         create it and return the session path.
         """
+        if self.__uid is None:
+            return None
         try:
             pth = os.path.join(self.getSessionsPath(), self.__uid)
             if not os.access(pth, os.F_OK):
@@ -107,7 +115,9 @@ class SessionManager:
         except:  # noqa: E722 pylint: disable=bare-except
             return None
 
-    def remakeSessionPath(self):
+    def remakeSessionPath(self) -> Optional[str]:
+        if self.__uid is None:
+            return None
         try:
             pth = os.path.join(self.getSessionsPath(), self.__uid)
             if os.access(pth, os.F_OK):

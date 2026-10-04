@@ -18,6 +18,7 @@ import os
 import platform
 import shutil
 import unittest
+from typing import cast
 
 from wwpdb.utils.session.SessionManager import SessionManager
 
@@ -54,7 +55,7 @@ class SessionTests(unittest.TestCase):
         self.assertIsNone(sm.getPath(), "Expected path should be None")
 
         # Test with path of None - should error out
-        sm = SessionManager(None)
+        sm = SessionManager(None)  # type: ignore[arg-type]
         self.assertIsNone(sm.getPath(), "Expected path should be None")
         self.assertIsNone(sm.getTopPath(), "Top path expected to be none")
 
@@ -73,15 +74,15 @@ class SessionTests(unittest.TestCase):
         self.assertIsNotNone(sm.makeSessionPath(), "Creating session path uid set")
         self.assertIsNotNone(sm.remakeSessionPath(), "Creating session path uid set")
         self.assertIsNotNone(sm.getPath(), "Expected path should not be None")
-        self.assertEqual(sm.getPath(), os.path.join(sessdir, "sessions", sm.getId()))
-        self.assertEqual(sm.getRelativePath(), "/sessions/" + sm.getId())
+        self.assertEqual(sm.getPath(), os.path.join(sessdir, "sessions", cast("str", sm.getId())))
+        self.assertEqual(sm.getRelativePath(), "/sessions/" + cast("str", sm.getId()))
 
     def testRemakeSessionPath(self) -> None:
         """Tests remaking session dir removes existing content"""
         sessdir = os.path.join(self.__sessiontop, "sessremake")
         sm = SessionManager(sessdir)
         sm.assignId()
-        pth = sm.makeSessionPath()
+        pth = cast("str", sm.makeSessionPath())
         self.assertIsNotNone(pth)
         fpath = os.path.join(pth, "afile.txt")
         with open(fpath, "w") as fout:

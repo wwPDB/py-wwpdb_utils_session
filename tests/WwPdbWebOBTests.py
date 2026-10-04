@@ -33,7 +33,7 @@ class WwPdbWebObTests(unittest.TestCase):
             "wsgi.input": wsgi_input,
             "webob.is_body_seekable": True,
             "REQUEST_METHOD": "POST",
-            "CONTENT_TYPE": "multipart/form-data; " "boundary=----------------------------deb95b63e42a",
+            "CONTENT_TYPE": "multipart/form-data; boundary=----------------------------deb95b63e42a",
             "CONTENT_LENGTH": len(data),
         }
         with WwPdbRequest(environ) as req:
@@ -42,13 +42,19 @@ class WwPdbWebObTests(unittest.TestCase):
 
     def test_Post_nofile(self) -> None:
         """Tests request with no data. Code path completeness"""
-        data = b"------------------------------deb95b63e42a\n" b'Content-Disposition: form-data; name="foo"\n' b"\n" b"foo\n" b"------------------------------deb95b63e42a--\n"
+        data = (
+            b"------------------------------deb95b63e42a\n"
+            b'Content-Disposition: form-data; name="foo"\n'
+            b"\n"
+            b"foo\n"
+            b"------------------------------deb95b63e42a--\n"
+        )
         wsgi_input = BytesIO(data)
         environ = {
             "wsgi.input": wsgi_input,
             "webob.is_body_seekable": True,
             "REQUEST_METHOD": "POST",
-            "CONTENT_TYPE": "multipart/form-data; " "boundary=----------------------------deb95b63e42a",
+            "CONTENT_TYPE": "multipart/form-data; boundary=----------------------------deb95b63e42a",
             "CONTENT_LENGTH": len(data),
         }
         with WwPdbRequest(environ) as req:
@@ -76,7 +82,7 @@ class WwPdbWebObTests(unittest.TestCase):
             "wsgi.input": wsgi_input,
             "webob.is_body_seekable": True,
             "REQUEST_METHOD": "POST",
-            "CONTENT_TYPE": "multipart/form-data; " "boundary=----------------------------deb95b63e42a",
+            "CONTENT_TYPE": "multipart/form-data; boundary=----------------------------deb95b63e42a",
             "CONTENT_LENGTH": len(data),
         }
         with WwPdbRequest(environ) as req:
@@ -110,7 +116,7 @@ class WwPdbWebObTests(unittest.TestCase):
             "wsgi.input": wsgi_input,
             "webob.is_body_seekable": True,
             "REQUEST_METHOD": "POST",
-            "CONTENT_TYPE": "multipart/form-data; " "boundary=----------------------------deb95b63e42a",
+            "CONTENT_TYPE": "multipart/form-data; boundary=----------------------------deb95b63e42a",
             "CONTENT_LENGTH": len(data),
         }
         with WwPdbRequest(environ) as req:
@@ -132,17 +138,19 @@ class WwPdbWebObTests(unittest.TestCase):
             "wsgi.input": wsgi_input,
             "webob.is_body_seekable": True,
             "REQUEST_METHOD": "POST",
-            "CONTENT_TYPE": "multipart/form-data; " "boundary=----------------------------deb95b63e42a",
+            "CONTENT_TYPE": "multipart/form-data; boundary=----------------------------deb95b63e42a",
             "CONTENT_LENGTH": len(data),
         }
         with WwPdbRequest(environ) as req:
             fs = req.params["bar"]
+            assert not isinstance(fs, str)  # noqa: S101  # cgi_FieldStorage should be returned
             self.assertEqual(fs.filename, "bar")
         # Not closed by the wrapper
         self.assertFalse(fs.file.closed)
         fs.file.close()
 
-    def testResponse(self) -> None:
+    @staticmethod
+    def testResponse() -> None:
         r = WwPdbResponse()
         r.status = "200 OK"
         r.content_type = "text/html"

@@ -39,6 +39,7 @@ import mimetypes
 import os
 import sys
 import traceback
+from typing import Any, Dict, List, Optional, TextIO, Tuple, TypeVar, Union, cast, overload
 
 try:
     from json import dumps, loads
@@ -49,11 +50,16 @@ from datetime import datetime
 
 from wwpdb.utils.session.SessionManager import SessionManager
 
+_T = TypeVar("_T")
 
-def json_serializer_helper(obj):
+
+def json_serializer_helper(obj: Any) -> str:
     """Helper function to handle = objects not serializable by default json code
 
     Current -  handling datetime objects and falling back to str()
+
+    Raises:
+        TypeError: If the object cannot be serialized to a string
     """
 
     if isinstance(obj, datetime):
@@ -70,16 +76,16 @@ def json_serializer_helper(obj):
 class WebRequest:
     """Base container and accessors for input and output parameters and control information."""
 
-    def __init__(self, paramDict=None, verbose=False):  # noqa: ARG002 pylint: disable=unused-argument
+    def __init__(self, paramDict: Optional[Dict[str, Any]] = None, verbose: bool = False) -> None:  # noqa: ARG002 pylint: disable=unused-argument
         if paramDict is None:
             paramDict = {}
         #
-        #  Input and storage model is dictionary of lists (e.g. dict[myKey] = [,,,])
-        #  Single values are stored in the leading element of the list (e.g. dict[myKey][0])
+        #  Input and storage model is dictionary of lists (e.g. Dict[myKey] = [,,,])
+        #  Single values are stored in the leading element of the list (e.g. Dict[myKey][0])
         #
         self.__dict = paramDict
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             sL = []
             sL.append("\n+WebRequest.printIt() WebRequest dictionary contents:\n")
@@ -90,10 +96,10 @@ class WebRequest:
         except:  # noqa: E722 pylint: disable=bare-except
             return ""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def printIt(self, ofh=sys.stdout):
+    def printIt(self, ofh: TextIO = sys.stdout) -> None:
         try:
             ofh.write("\n +WebRequest.printIt() WebRequest dictionary contents:\n")
 
@@ -104,7 +110,7 @@ class WebRequest:
         except:  # noqa: E722 pylint: disable=bare-except
             pass
 
-    def dump(self, format="text"):  # noqa: A002 pylint: disable=redefined-builtin
+    def dump(self, format: str = "text") -> List[str]:  # noqa: A002 pylint: disable=redefined-builtin
         oL = []
         try:
             if format == "html":
@@ -120,16 +126,26 @@ class WebRequest:
 
         return oL
 
-    def getJSON(self):
+    def getJSON(self) -> str:
         return dumps(self.__dict)
 
-    def setJSON(self, JSONString):
+    def setJSON(self, JSONString: Union[str, bytes]) -> None:
         self.__dict = loads(JSONString)
 
-    def getValue(self, myKey):
+    def getValue(self, myKey: str) -> str:
         return self._getStringValue(myKey)
 
-    def getValueOrDefault(self, myKey, default=""):
+    # fmt: off
+    @overload
+    def getValueOrDefault(self, myKey: str) -> str:
+        ...
+
+    @overload
+    def getValueOrDefault(self, myKey: str, default: _T) -> Union[str, _T]:
+        ...
+
+    # fmt: on
+    def getValueOrDefault(self, myKey: str, default: Any = "") -> Any:
         if not self.exists(myKey):
             return default
         v = self._getStringValue(myKey)
@@ -137,97 +153,98 @@ class WebRequest:
             return default
         return v
 
-    def getValueList(self, myKey):
+    def getValueList(self, myKey: str) -> List[Any]:
         return self._getStringList(myKey)
 
-    def getRawValue(self, myKey):
+    def getRawValue(self, myKey: str) -> Any:
         return self._getRawValue(myKey)
 
-    def getDictionary(self):
+    def getDictionary(self) -> Dict[str, Any]:
         return self.__dict
 
-    def setValue(self, myKey, aValue):
+    def setValue(self, myKey: str, aValue: Any) -> None:
         self.__dict[myKey] = [aValue]
 
-    def setValueList(self, myKey, valueList):
+    def setValueList(self, myKey: str, valueList: List[Any]) -> None:
         self.__dict[myKey] = valueList
 
-    def setDictionary(self, myDict, overWrite=False):
+    def setDictionary(self, myDict: Dict[str, Any], overWrite: bool = False) -> None:
         for k, v in myDict.items():
             if overWrite or (not self.exists(k)):
                 self.setValue(k, v)
 
-    def exists(self, myKey):
+    def exists(self, myKey: str) -> bool:
         try:
             return myKey in self.__dict
         except:  # noqa: E722 pylint: disable=bare-except
             return False
 
-    def _getRawValue(self, myKey):
+    def _getRawValue(self, myKey: str) -> Any:
         try:
             return self.__dict[myKey][0]
         except:  # noqa: E722 pylint: disable=bare-except
             return None
 
-    def _getStringValue(self, myKey):
+    def _getStringValue(self, myKey: str) -> str:
         try:
             return str(self.__dict[myKey][0]).strip()
         except:  # noqa: E722 pylint: disable=bare-except
             return ""
 
-    def _getIntegerValue(self, myKey):
+    def _getIntegerValue(self, myKey: str) -> Optional[int]:
         try:
             return int(self.__dict[myKey][0])
         except:  # noqa: E722 pylint: disable=bare-except
             return None
 
-    def _getDoubleValue(self, myKey):
+    def _getDoubleValue(self, myKey: str) -> Optional[float]:
         try:
             return float(self.__dict[myKey][0])
         except:  # noqa: E722 pylint: disable=bare-except
             return None
 
-    def _getStringList(self, myKey):
+    def _getStringList(self, myKey: str) -> List[Any]:
         try:
-            return self.__dict[myKey]
+            vL: List[Any] = self.__dict[myKey]
+            return vL
         except:  # noqa: E722 pylint: disable=bare-except
             return []
 
 
 class InputRequest(WebRequest):
-    def __init__(self, paramDict, verbose=False, log=sys.stderr):  # noqa: ARG002 pylint: disable=unused-argument
+    def __init__(self, paramDict: Optional[Dict[str, Any]], verbose: bool = False, log: TextIO = sys.stderr) -> None:  # noqa: ARG002 pylint: disable=unused-argument
         super(InputRequest, self).__init__(paramDict, verbose)
         self.__returnFormatDefault = ""
 
-    def setDefaultReturnFormat(self, return_format="html"):
+    def setDefaultReturnFormat(self, return_format: str = "html") -> None:
         self.__returnFormatDefault = return_format
         if not self.exists("return_format"):
             self.setValue("return_format", self.__returnFormatDefault)
 
-    def getRequestPath(self):
+    def getRequestPath(self) -> str:
         return self._getStringValue("request_path")
 
-    def getReturnFormat(self):
+    def getReturnFormat(self) -> str:
         if not self.exists("return_format"):
             self.setValue("return_format", self.__returnFormatDefault)
         return self._getStringValue("return_format")
 
-    def setReturnFormat(self, return_format="html"):
+    def setReturnFormat(self, return_format: str = "html") -> None:
         return self.setValue("return_format", return_format)
 
-    def getSessionId(self):
+    def getSessionId(self) -> str:
         return self._getStringValue("sessionid")
 
-    def getSessionPath(self):
+    def getSessionPath(self) -> str:
         return SessionManager(topPath=self._getStringValue("TopSessionPath")).getSessionsPath()
 
-    def getTopSessionPath(self):
+    def getTopSessionPath(self) -> str:
         return self._getStringValue("TopSessionPath")
 
-    def getSemaphore(self):
+    def getSemaphore(self) -> str:
         return self._getStringValue("semaphore")
 
-    def getSessionObj(self):
+    def getSessionObj(self) -> SessionManager:
         if self.exists("TopSessionPath"):
             sObj = SessionManager(topPath=self._getStringValue("TopSessionPath"))
         else:
@@ -235,7 +252,7 @@ class InputRequest(WebRequest):
         sObj.setId(uid=self._getStringValue("sessionid"))
         return sObj
 
-    def newSessionObj(self, forceNew=False):
+    def newSessionObj(self, forceNew: bool = False) -> SessionManager:
         if self.exists("TopSessionPath"):
             sObj = SessionManager(topPath=self._getStringValue("TopSessionPath"))
         else:
@@ -270,7 +287,12 @@ class FileIterator:
 
     CHUNK_SIZE = 8 * 1024 * 1024
 
-    def __init__(self, filePath, fileSize, uncompress=False):
+    filePath: str
+    fileName: str
+    fileSize: int
+    fp: Union[gzip.GzipFile, io.BufferedReader]
+
+    def __init__(self, filePath: str, fileSize: Optional[int], uncompress: bool = False) -> None:
         """Opens the given file for reading.
 
         Args:
@@ -293,10 +315,10 @@ class FileIterator:
         else:
             self.fp = open(filePath, "rb")
 
-    def __iter__(self):
+    def __iter__(self) -> "FileIterator":
         return self
 
-    def next(self):
+    def next(self) -> bytes:
         chunk = self.fp.read(self.CHUNK_SIZE)
 
         if not chunk:
@@ -305,13 +327,16 @@ class FileIterator:
 
         return chunk
 
-    __next__ = next
+    # This is a builtin -- could be simply defined as __next__ = next, but this is more explicit and clear.
+    __next__ = next  # noqa: A003
 
 
 class ResponseContent:
     MULTIPART_THRESHOLD = 8 * 1024 * 1024  # file size threshold to send file in chunks, 8mb
 
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
+    _cD: Dict[str, Any]
+
+    def __init__(self, reqObj: Optional[InputRequest] = None, verbose: bool = False, log: TextIO = sys.stderr) -> None:
         """
         Manage content items to be transfered as part of the application response.
 
@@ -324,7 +349,7 @@ class ResponseContent:
         self.__returnFormat = ""
         self.__setup()
 
-    def __setup(self):
+    def __setup(self) -> None:
         """Default response content is set here."""
         self._cD["htmllinkcontent"] = ""
         self._cD["htmlcontent"] = ""
@@ -349,10 +374,10 @@ class ResponseContent:
             self._cD["sessionid"] = ""
             self._cD["semaphore"] = ""
 
-    def setData(self, dataObj=None):
+    def setData(self, dataObj: Any = None) -> None:
         self._cD["datacontent"] = dataObj
 
-    def set(self, key, val, asJson=False):
+    def set(self, key: str, val: Any, asJson: bool = False) -> None:
         if asJson:
             try:
                 self._cD[key] = dumps(val, default=json_serializer_helper)
@@ -362,12 +387,12 @@ class ResponseContent:
         else:
             self._cD[key] = val
 
-    def setHtmlList(self, htmlList=None):
+    def setHtmlList(self, htmlList: Optional[List[str]] = None) -> None:
         if htmlList is None:
             htmlList = []
         self._cD["htmlcontent"] = "\n".join(htmlList)
 
-    def appendHtmlList(self, htmlList=None):
+    def appendHtmlList(self, htmlList: Optional[List[str]] = None) -> None:
         if htmlList is None:
             htmlList = []
         if len(self._cD["htmlcontent"]) > 0:
@@ -375,10 +400,16 @@ class ResponseContent:
         else:
             self._cD["htmlcontent"] = "\n".join(htmlList)
 
-    def setHtmlText(self, htmlText=""):
+    def setHtmlText(self, htmlText: str = "") -> None:
         self._cD["htmlcontent"] = htmlText
 
-    def setHtmlTextFromTemplate(self, templateFilePath, webIncludePath, parameterDict=None, insertContext=False):
+    def setHtmlTextFromTemplate(
+        self,
+        templateFilePath: str,
+        webIncludePath: str,
+        parameterDict: Optional[Dict[str, Any]] = None,
+        insertContext: bool = False,
+    ) -> None:
         pD = parameterDict if parameterDict is not None else {}
         self._cD["htmlcontent"] = self.__processTemplate(
             templateFilePath=templateFilePath,
@@ -387,22 +418,22 @@ class ResponseContent:
             insertContext=insertContext,
         )
 
-    def setHtmlLinkText(self, htmlText=""):
+    def setHtmlLinkText(self, htmlText: str = "") -> None:
         self._cD["htmllinkcontent"] = htmlText
 
-    def setText(self, text=""):
+    def setText(self, text: str = "") -> None:
         self._cD["textcontent"] = text
 
-    def setLocation(self, url=""):
+    def setLocation(self, url: str = "") -> None:
         self._cD["location"] = url
 
-    def addDictionaryItems(self, cD=None):
+    def addDictionaryItems(self, cD: Optional[Dict[str, Any]] = None) -> None:
         if cD is None:
             cD = {}
         for k, v in cD.items():
             self._cD[k] = v
 
-    def setTextFile(self, filePath):
+    def setTextFile(self, filePath: str) -> None:
         try:
             if os.path.exists(filePath):
                 self._readFile(filePath, dataContent="textcontent")
@@ -410,12 +441,13 @@ class ResponseContent:
             self.__lfh.write("+setTextFile() File read failed %s %s\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
-    def setTextFileO(self, filePath):
+    def setTextFileO(self, filePath: str) -> None:
         with open(filePath) as fin:
             self._cD["textcontent"] = fin.read()
 
     @staticmethod
-    def getMimetypeAndEncoding(filename):
+    def getMimetypeAndEncoding(filename: str) -> Tuple[str, Optional[str]]:
+        ret: Tuple[str, Optional[str]]
         mtype, encoding = mimetypes.guess_type(filename)
         # We'll ignore encoding, even though we shouldn't really
         if mtype is None:
@@ -427,7 +459,7 @@ class ResponseContent:
             ret = (mtype, encoding)
         return ret
 
-    def _readFile(self, filePath, uncompress=False, dataContent="datacontent"):
+    def _readFile(self, filePath: str, uncompress: bool = False, dataContent: str = "datacontent") -> None:
         fileSize = os.path.getsize(filePath)
         if fileSize > ResponseContent.MULTIPART_THRESHOLD:
             self.__lfh.write("+ResponseContent._readFile() File too big (%s), sending as multipart\n" % (fileSize))
@@ -438,7 +470,7 @@ class ResponseContent:
             with open(filePath, "rb") as fin:
                 self._cD[dataContent] = fin.read()
 
-    def setBinaryFile(self, filePath, attachmentFlag=False, serveCompressed=True):
+    def setBinaryFile(self, filePath: str, attachmentFlag: bool = False, serveCompressed: bool = True) -> None:
         try:
             if os.path.exists(filePath):
                 _dir, fn = os.path.split(filePath)
@@ -475,7 +507,7 @@ class ResponseContent:
             self.__lfh.write("ResponseContent.setBinaryFile() File read failed %s error: %r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
-    def wrapFileAsJsonp(self, filePath, callBack=None):
+    def wrapFileAsJsonp(self, filePath: str, callBack: Optional[str] = None) -> None:
         try:
             if os.path.exists(filePath):
                 _dir, fn = os.path.split(filePath)
@@ -484,9 +516,11 @@ class ResponseContent:
                 with open(filePath) as fin:
                     dd["data"] = fin.read()
                 if ext.lower() != ".json":
-                    self._cD["datacontent"] = callBack + "(" + dumps(dd) + ");"
+                    # cast() is for typing only - a TypeError is raised (and caught below) if callBack is None
+                    self._cD["datacontent"] = cast("str", callBack) + "(" + dumps(dd) + ");"
                 else:
-                    self._cD["datacontent"] = callBack + "(" + dd["data"] + ");"
+                    # cast() is for typing only - a TypeError is raised (and caught below) if callBack is None
+                    self._cD["datacontent"] = cast("str", callBack) + "(" + dd["data"] + ");"
                 self._cD["datafileName"] = fn
                 contentType = "application/x-javascript"
                 encodingType = None
@@ -501,28 +535,28 @@ class ResponseContent:
             self.__lfh.write("ResponseContent.wrapFileAsJsonp() File read failed %s err=%r\n" % (filePath, str(e)))
             traceback.print_exc(file=self.__lfh)
 
-    def setStatus(self, statusMsg="", semaphore=""):
+    def setStatus(self, statusMsg: str = "", semaphore: str = "") -> None:
         self._cD["errorflag"] = False
         self._cD["statustext"] = statusMsg
         self._cD["semaphore"] = semaphore
 
-    def isError(self):
-        return self._cD["errorflag"]
+    def isError(self) -> bool:
+        return bool(self._cD["errorflag"])
 
-    def setError(self, errMsg="", semaphore=""):
+    def setError(self, errMsg: str = "", semaphore: str = "") -> None:
         self._cD["errorflag"] = True
         self._cD["statustext"] = errMsg
         # legacy setting -
         self._cD["errortext"] = errMsg
         self._cD["semaphore"] = semaphore
 
-    def setStatusCode(self, aCode):
+    def setStatusCode(self, aCode: Union[int, str]) -> None:
         self._cD["statuscode"] = aCode
 
-    def setHtmlContentPath(self, aPath):
+    def setHtmlContentPath(self, aPath: str) -> None:
         self._cD["htmlcontentpath"] = aPath
 
-    def dump(self, maxLength=130):
+    def dump(self, maxLength: int = 130) -> List[str]:
         retL = []
         retL.append("\n +ResponseContent.dump() - response content object\n")
         for k, v in self._cD.items():
@@ -536,13 +570,13 @@ class ResponseContent:
                 retL.append(" value(1-%d): %s\n" % (maxLength, str(v)[:maxLength]))
         return retL
 
-    def setReturnFormat(self, format):  # noqa: A002 pylint: disable=redefined-builtin
+    def setReturnFormat(self, format: str) -> bool:  # noqa: A002 pylint: disable=redefined-builtin
         if format in ["html", "text", "json", "jsonText", "jsonData", "location", "binary", "jsonp"]:
             self.__returnFormat = format
             return True
         return False
 
-    def get(self):
+    def get(self) -> Dict[str, Any]:
         """Repackage the response for Apache according to the input return_format='html|json|text|...'"""
         rD = {}
         if self.__returnFormat == "html":
@@ -567,19 +601,17 @@ class ResponseContent:
             rD = self.__initBinaryResponse(self._cD)
         elif self.__returnFormat == "jsonp":
             rD = self.__initJsonpResponse(self._cD)
-        else:
-            pass
         return rD
 
     @staticmethod
-    def __initLocationResponse(url):
+    def __initLocationResponse(url: str) -> Dict[str, Any]:
         rspDict = {}
         rspDict["CONTENT_TYPE"] = "location"
         rspDict["RETURN_STRING"] = url
         return rspDict
 
     @staticmethod
-    def __initBinaryResponse(myD=None):
+    def __initBinaryResponse(myD: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         if myD is None:
             myD = {}
         rspDict = {}
@@ -599,7 +631,7 @@ class ResponseContent:
         return rspDict
 
     @staticmethod
-    def __initJsonResponse(myD=None):
+    def __initJsonResponse(myD: Any = None) -> Dict[str, Any]:
         if myD is None:
             myD = {}
         rspDict = {}
@@ -608,7 +640,7 @@ class ResponseContent:
         return rspDict
 
     @staticmethod
-    def __initJsonpResponse(myD=None):
+    def __initJsonpResponse(myD: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         if myD is None:
             myD = {}
         rspDict = {}
@@ -617,7 +649,7 @@ class ResponseContent:
         return rspDict
 
     @staticmethod
-    def __initJsonResponseInTextArea(myD=None):
+    def __initJsonResponseInTextArea(myD: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         if myD is None:
             myD = {}
         rspDict = {}
@@ -627,14 +659,14 @@ class ResponseContent:
         return rspDict
 
     @staticmethod
-    def __initHtmlResponse(myHtml=""):
+    def __initHtmlResponse(myHtml: str = "") -> Dict[str, Any]:
         rspDict = {}
         rspDict["CONTENT_TYPE"] = "text/html"
         rspDict["RETURN_STRING"] = myHtml
         return rspDict
 
     @staticmethod
-    def __initTextResponse(myD=None):
+    def __initTextResponse(myD: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         if myD is None:
             myD = {}
         rspDict = {}
@@ -648,8 +680,12 @@ class ResponseContent:
         return rspDict
 
     def __processTemplate(
-        self, templateFilePath="./alignment_template.html", webIncludePath=".", parameterDict=None, insertContext=False
-    ):
+        self,
+        templateFilePath: str = "./alignment_template.html",
+        webIncludePath: str = ".",
+        parameterDict: Optional[Dict[str, Any]] = None,
+        insertContext: bool = False,
+    ) -> str:
         """Read the input HTML template data file and perform the key/value substitutions in the
         input parameter dictionary.
 

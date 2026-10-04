@@ -29,14 +29,18 @@ import sys
 import time
 import traceback
 import types
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, TextIO, cast
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+
+if TYPE_CHECKING:
+    from wwpdb.utils.session.SessionManager import SessionManager
 from wwpdb.utils.session.UtilDataStore import UtilDataStore
-from wwpdb.utils.session.WebRequest import ResponseContent
+from wwpdb.utils.session.WebRequest import InputRequest, ResponseContent
 
 
 class WebAppWorkerBase:
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
+    def __init__(self, reqObj: Optional[InputRequest] = None, verbose: bool = False, log: TextIO = sys.stderr) -> None:
         """
         Base class supporting web application worker methods.
 
@@ -47,26 +51,27 @@ class WebAppWorkerBase:
         self._verbose = verbose
         self.__debug = False
         self._lfh = log
-        self._reqObj = reqObj
-        self._sObj = None
-        self._sessionId = None
-        self._sessionPath = None
-        self._rltvSessionPath = None
+        # cast() is for typing only - a None request object is not supported and fails below
+        self._reqObj = cast("InputRequest", reqObj)
+        self._sObj: Optional[SessionManager] = None
+        self._sessionId: Optional[str] = None
+        self._sessionPath: Optional[str] = None
+        self._rltvSessionPath: Optional[str] = None
         self._siteId = self._reqObj.getValue("WWPDB_SITE_ID")
         self._cI = ConfigInfo(self._siteId)
-        self._uds = None
+        self._uds: Optional[UtilDataStore] = None
         # UtilDataStore prefix for general session data -- used by _getSession()
-        self._udsPrefix = None
-        self.__appPathD = {}
+        self._udsPrefix: Optional[str] = None
+        self.__appPathD: Dict[str, str] = {}
 
-    def addService(self, url, opName):
+    def addService(self, url: str, opName: str) -> None:
         self.__appPathD[url] = opName
 
-    def addServices(self, serviceDict):
+    def addServices(self, serviceDict: Dict[str, str]) -> None:
         for k, v in serviceDict.items():
             self.__appPathD[k] = v
 
-    def doOp(self):
+    def doOp(self) -> ResponseContent:
         """Map operation to path and invoke operation.  Exceptions are caught within this method.
 
         :returns:
@@ -91,7 +96,8 @@ class WebAppWorkerBase:
                 rC = ResponseContent(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
                 rC.setError(errMsg="Unknown operation")
             else:
-                mth = getattr(self, self.__appPathD[reqPath], None)
+                # An unknown method name raises AttributeError, which is caught below
+                mth = getattr(self, self.__appPathD[reqPath])
                 rC = mth()
             return rC
         except:  # noqa: E722 pylint: disable=bare-except
@@ -101,7 +107,13 @@ class WebAppWorkerBase:
             rC.setError(errMsg="Operation failure")
             return rC
 
-    def _saveSessionParameter(self, param=None, value=None, pvD=None, prefix=None):
+    def _saveSessionParameter(
+        self,
+        param: Optional[str] = None,
+        value: Any = None,
+        pvD: Optional[Dict[str, Any]] = None,
+        prefix: Optional[str] = None,
+    ) -> bool:
         """Store the input (param,value) pair and/or the contents of parameter value
         dictionary (pvD) in the session parameter store.
         """
@@ -123,11 +135,12 @@ class WebAppWorkerBase:
                 )
         return False
 
-    def _getSessionParameter(self, param=None, prefix=None):
+    def _getSessionParameter(self, param: Optional[str] = None, prefix: Optional[str] = None) -> Any:
         """Recover session data for the input parameter or return an empty string."""
         try:
             self._uds = UtilDataStore(reqObj=self._reqObj, prefix=prefix, verbose=self._verbose, log=self._lfh)
-            return self._uds.get(param)
+            # cast() is for typing only - a None param is a missing key, for which get() returns an empty string
+            return self._uds.get(cast("str", param))
         except Exception as e:  # noqa: BLE001
             if self._verbose:
                 self._lfh.write(
@@ -135,13 +148,13 @@ class WebAppWorkerBase:
                 )
         return ""
 
-    def _getFileText(self, filePath):
+    def _getFileText(self, filePath: str) -> ResponseContent:
         self._reqObj.setReturnFormat(return_format="text")
         rC = ResponseContent(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
         rC.setTextFile(filePath)
         return rC
 
-    def _newSessionOp(self):
+    def _newSessionOp(self) -> ResponseContent:
         if self.__debug:
             self._lfh.write("+WebAppWorkerBase.newSessionOp() starting\n")
 
@@ -156,7 +169,7 @@ class WebAppWorkerBase:
 
         return rC
 
-    def _verifySessionContext(self, apikyfn, overWrite=True):
+    def _verifySessionContext(self, apikyfn: Callable[[str], bool], overWrite: bool = True) -> bool:
         try:
             self._sObj = self._reqObj.getSessionObj()
             pth = self._sObj.getPath()
@@ -190,7 +203,7 @@ class WebAppWorkerBase:
                 traceback.print_exc(file=self._lfh)
         return False
 
-    def _getSession(self, forceNew=False, useContext=False, overWrite=True):
+    def _getSession(self, forceNew: bool = False, useContext: bool = False, overWrite: bool = True) -> None:
         """Join existing session or create new session as required."""
         self._sObj = self._reqObj.newSessionObj(forceNew=forceNew)
 
@@ -214,10 +227,10 @@ class WebAppWorkerBase:
                         self._lfh.write(" %30s= %r\n" % (k, v))
             self._reqObj.setDictionary(dd, overWrite=overWrite)
 
-    def _isFileUpload(self, fileTag="file"):
+    def _isFileUpload(self, fileTag: str = "file") -> bool:
         """Generic check for the existence of request paramenter of type "file"."""
         fs = self._reqObj.getRawValue(fileTag)
-        if sys.version_info[0] < 3:
+        if sys.version_info[0] < 3:  # noqa: UP036
             if (fs is None) or (isinstance(fs, types.StringType)):  # pylint: disable=no-member
                 return False
         elif isinstance(fs, (bytes, str)):
@@ -225,7 +238,7 @@ class WebAppWorkerBase:
 
         return True
 
-    def _uploadFile(self, fileTag="file"):
+    def _uploadFile(self, fileTag: str = "file") -> Optional[str]:
         """Copying uploaded file to the session directory.  Return file name or None."""
         try:
             fs = self._reqObj.getRawValue(fileTag)
@@ -243,7 +256,8 @@ class WebAppWorkerBase:
             #
             # Store upload file in session directory -
             #
-            fPathAbs = os.path.join(self._sessionPath, fName)
+            # cast() is for typing only - a None session path raises TypeError, which is caught below
+            fPathAbs = os.path.join(cast("str", self._sessionPath), fName)
             if self._verbose:
                 self._lfh.write(
                     "+WebAppWorkerBase._uploadFile() - starting upload of %r to path %r\n" % (fNameInput, fPathAbs)
@@ -274,22 +288,22 @@ class WebAppWorkerBase:
                 traceback.print_exc(file=self._lfh)
         return None
 
-    def _setSemaphore(self):
+    def _setSemaphore(self) -> str:
         sVal = str(time.strftime("TMP_%Y%m%d%H%M%S", time.localtime()))
         self._reqObj.setValue("semaphore", sVal)
         return sVal
 
-    def _openSemaphoreLog(self, semaphore="TMP_"):
+    def _openSemaphoreLog(self, semaphore: str = "TMP_") -> None:
         sessionId = self._reqObj.getSessionId()
         sessionPath = self._reqObj.getSessionPath()
         fPathAbs = os.path.join(sessionPath, sessionId, semaphore + ".log")
         self._lfh = open(fPathAbs, "w")
 
-    def _closeSemaphoreLog(self, semaphore="TMP_"):  # noqa: ARG002 pylint: disable=unused-argument
+    def _closeSemaphoreLog(self, semaphore: str = "TMP_") -> None:  # noqa: ARG002 pylint: disable=unused-argument
         self._lfh.flush()
         self._lfh.close()
 
-    def _postSemaphore(self, semaphore="TMP_", value="OK"):
+    def _postSemaphore(self, semaphore: str = "TMP_", value: str = "OK") -> str:
         sessionId = self._reqObj.getSessionId()
         sessionPath = self._reqObj.getSessionPath()
         fPathAbs = os.path.join(sessionPath, sessionId, semaphore)
@@ -298,7 +312,7 @@ class WebAppWorkerBase:
         fp.close()
         return semaphore
 
-    def _semaphoreExists(self, semaphore="TMP_"):
+    def _semaphoreExists(self, semaphore: str = "TMP_") -> bool:
         sessionId = self._reqObj.getSessionId()
         sessionPath = self._reqObj.getSessionPath()
         fPathAbs = os.path.join(sessionPath, sessionId, semaphore)
@@ -306,7 +320,7 @@ class WebAppWorkerBase:
             return True
         return False
 
-    def _getSemaphore(self, semaphore="TMP_"):
+    def _getSemaphore(self, semaphore: str = "TMP_") -> str:
         sessionId = self._reqObj.getSessionId()
         sessionPath = self._reqObj.getSessionPath()
         fPathAbs = os.path.join(sessionPath, sessionId, semaphore)

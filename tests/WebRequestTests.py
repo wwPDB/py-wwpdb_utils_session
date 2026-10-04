@@ -53,7 +53,7 @@ class Unprintable:
     """Object which cannot be converted to a string"""
 
     def __str__(self) -> str:
-        raise ValueError("no string")
+        raise ValueError("no string")  # noqa: EM101,TRY003
 
 
 class SessionTests(unittest.TestCase):
@@ -250,7 +250,9 @@ class ResponseTests(unittest.TestCase):
         rc.setHtmlTextFromTemplate(os.path.join(self.__HERE, "template.txt"), self.__HERE, parameterDict={"T1": 2})
         sys.stderr.write("%s\n" % rc.dump())
         # Should error
-        rc.setHtmlTextFromTemplate(os.path.join(self.__HERE, "missingtemplate.txt"), self.__HERE, parameterDict={"T1": 2})
+        rc.setHtmlTextFromTemplate(
+            os.path.join(self.__HERE, "missingtemplate.txt"), self.__HERE, parameterDict={"T1": 2}
+        )
 
         # Files
         rc.setTextFile(os.path.join(self.__HERE, "template.txt"))
