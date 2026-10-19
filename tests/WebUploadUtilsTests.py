@@ -21,6 +21,7 @@ import tempfile
 import unittest
 from io import BytesIO, StringIO
 from typing import Any, cast
+from unittest import mock
 
 from webob.compat import cgi_FieldStorage
 
@@ -101,6 +102,37 @@ class WebUploadUtilsTests(unittest.TestCase):
         # No uncompress
         self.assertEqual(wuu.copyToSession("file2", uncompress=False), "model2.cif.gz")
         self.assertFalse(os.path.exists(os.path.join(self.sessionPath, "model2.cif")))
+
+    def testCopyToSessionGzipShellMetacharacters(self) -> None:
+        """Uploaded file names containing shell syntax must not be executed when uncompressing."""
+        gzContent = gzip.compress(self.content)
+        fName = "a;touch pwned1;b $(touch pwned2) `touch pwned3` & x.cif.gz"
+        wuu = self.makeUtils({"file": [_create_fs("application/gzip", gzContent, filename=fName)]})
+
+        cwd = os.getcwd()
+        os.chdir(self.tmpDir)
+        try:
+            with mock.patch("os.system") as mSystem, mock.patch("subprocess.Popen") as mPopen:
+                self.assertEqual(wuu.copyToSession(), fName[:-3])
+                mSystem.assert_not_called()
+                mPopen.assert_not_called()
+        finally:
+            os.chdir(cwd)
+
+        for marker in ["pwned1", "pwned2", "pwned3"]:
+            self.assertFalse(os.path.exists(os.path.join(self.tmpDir, marker)))
+            self.assertFalse(os.path.exists(os.path.join(self.sessionPath, marker)))
+        with open(os.path.join(self.sessionPath, fName[:-3]), "rb") as fin:
+            self.assertEqual(fin.read(), self.content)
+
+    def testCopyToSessionGzipCorrupt(self) -> None:
+        """A file that is not valid gzip fails the upload and leaves no partial output."""
+        for verbose in [True, False]:
+            wuu = self.makeUtils(
+                {"file": [_create_fs("application/gzip", b"not gzip data", filename="bad.cif.gz")]}, verbose=verbose
+            )
+            self.assertIsNone(wuu.copyToSession())
+            self.assertFalse(os.path.exists(os.path.join(self.sessionPath, "bad.cif")))
 
     def testCopyToSessionFail(self) -> None:
         wuu = self.makeUtils({"text": ["string"]})

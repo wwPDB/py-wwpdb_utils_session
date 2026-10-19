@@ -20,6 +20,8 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.09"
 
+import contextlib
+import gzip
 import ntpath
 import os
 import shutil
@@ -143,7 +145,12 @@ class WebUploadUtils:
                     self.__lfh.write(
                         "+WebUploadUtils.copyToSession() uncompressing file %s\n" % str(sessionInputFilePath)
                     )
-                self.__copyGzip(sessionInputFilePath, sessionInputFilePath[:-3])
+                if not self.__copyGzip(sessionInputFilePath, sessionInputFilePath[:-3]):
+                    if self.__verbose:
+                        self.__lfh.write(
+                            "+WebUploadUtils.copyToSession() uncompress failed for %s\n" % str(sessionInputFilePath)
+                        )
+                    return None
                 sessionInputFileName = sessionInputFileName[:-3]
 
             if self.__verbose:
@@ -239,11 +246,15 @@ class WebUploadUtils:
         return fId, fType
 
     def __copyGzip(self, inpFilePath: str, outFilePath: str) -> bool:
+        """Decompress inpFilePath to outFilePath in-process (no shell, so file names are never interpreted)."""
         try:
-            cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
-            os.system(cmd)  # noqa: S605
+            with gzip.open(inpFilePath, "rb") as ifh, open(outFilePath, "wb") as ofh:
+                shutil.copyfileobj(ifh, ofh)
             return True
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
+            # Do not leave a partially decompressed file behind
+            with contextlib.suppress(OSError):
+                os.remove(outFilePath)
             return False
